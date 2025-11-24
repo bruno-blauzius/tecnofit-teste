@@ -1,0 +1,43 @@
+version: '3.8'
+
+services:
+  # Serviço PHP com Apache
+  application:
+    build:
+      context: .
+      dockerfile: infra/Dockerfile
+    container_name: tecnofit-php
+    ports:
+      - "8000:80"
+    volumes:
+      - ./app:/var/www/html
+    environment:
+      - APACHE_RUN_USER=www-data
+      - APACHE_RUN_GROUP=www-data
+    networks:
+      - tecnofit-network
+    depends_on:
+      - db
+
+  # Serviço MySQL (opcional, mas recomendado para Laravel)
+  db:
+    image: mysql:8.0
+    container_name: tecnofit-mysql
+    environment:
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
+      MYSQL_DATABASE: ${MYSQL_DATABASE}
+      MYSQL_USER: ${MYSQL_USER}
+      MYSQL_PASSWORD: ${MYSQL_PASSWORD}
+    ports:
+      - "3306:3306"
+    volumes:
+      - db-data:/var/lib/mysql
+    networks:
+      - tecnofit-network
+
+volumes:
+  db-data:
+
+networks:
+  tecnofit-network:
+    driver: bridge
