@@ -22,7 +22,7 @@ services:
   # Serviço MySQL (opcional, mas recomendado para Laravel)
   db:
     image: mysql:8.0
-    container_name: tecnofit-mysql
+    container_name: tecnofit-database
     environment:
       MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
       MYSQL_DATABASE: ${MYSQL_DATABASE}
