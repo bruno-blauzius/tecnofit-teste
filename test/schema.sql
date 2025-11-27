@@ -67,3 +67,19 @@ CREATE TABLE IF NOT EXISTS users (
     updated_at TIMESTAMP NULL DEFAULT NULL,
     FOREIGN KEY (account_id) REFERENCES account(id) ON DELETE SET NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- Tabela de Chaves PIX
+CREATE TABLE IF NOT EXISTS pix_keys (
+    id CHAR(36) PRIMARY KEY,
+    account_id CHAR(36) NOT NULL,
+    key_type ENUM('cpf', 'cnpj', 'email', 'phone', 'random') NOT NULL COMMENT 'Tipo da chave PIX',
+    key_value VARCHAR(255) NOT NULL UNIQUE COMMENT 'Valor da chave PIX',
+    status ENUM('active', 'inactive', 'pending') NOT NULL DEFAULT 'active' COMMENT 'Status da chave',
+    created_at TIMESTAMP NULL DEFAULT NULL,
+    updated_at TIMESTAMP NULL DEFAULT NULL,
+    deleted_at TIMESTAMP NULL DEFAULT NULL,
+    FOREIGN KEY (account_id) REFERENCES account(id) ON DELETE CASCADE,
+    INDEX idx_account_id (account_id),
+    INDEX idx_key_type (key_type),
+    INDEX idx_status (status)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;

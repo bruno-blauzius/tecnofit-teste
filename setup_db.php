@@ -13,10 +13,12 @@ use Hyperf\DbConnection\Db;
 
 echo "Dropping tables...\n";
 Db::statement('SET FOREIGN_KEY_CHECKS=0');
+Db::statement('DROP TABLE IF EXISTS pix_keys');
 Db::statement('DROP TABLE IF EXISTS account_withdraw_pix');
 Db::statement('DROP TABLE IF EXISTS account_withdraw');
-Db::statement('DROP TABLE IF EXISTS account');
+Db::statement('DROP TABLE IF EXISTS account_transaction_history');
 Db::statement('DROP TABLE IF EXISTS users');
+Db::statement('DROP TABLE IF EXISTS account');
 Db::statement('SET FOREIGN_KEY_CHECKS=1');
 
 echo "Running schema...\n";

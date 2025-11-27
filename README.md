@@ -110,14 +110,35 @@ Todos os emails enviados podem ser visualizados na interface do Mailhog.
 
 ## Executar Testes
 
-```bash
-# Todos os testes
-docker compose exec application composer test
+### Suite Completa (132 testes)
 
-# Testes específicos
+```bash
+# Todos os testes (funcionalidades + PIX + schedule)
+docker compose exec application composer test
+```
+
+**Cobertura atual:**
+- ✅ 93 testes originais (contas, saques, transações, autenticação)
+- ✅ 31 testes PIX (validação de chaves CPF, CNPJ, email, phone, random)
+- ✅ 9 testes de agendamento funcional (lógica de negócio)
+- ⏭️ 5 testes de coroutine (pulados no co-phpunit)
+
+### Testes Específicos
+
+```bash
+# Testes por módulo
 docker compose exec application ./vendor/bin/phpunit test/Cases/Controller/AccountControllerTest.php
 docker compose exec application ./vendor/bin/phpunit test/Cases/UseCase/Account/WithdrawUseCaseTest.php
+docker compose exec application ./vendor/bin/phpunit test/Cases/Model/PixKeyTest.php
+
+# Testes de agendamento funcional (lógica de negócio)
+docker compose exec application ./vendor/bin/phpunit test/Cases/UseCase/Schedule/ScheduleUseCaseFunctionalTest.php
+
+# Testes de processamento paralelo (fora do co-phpunit)
+docker compose exec application php vendor/bin/phpunit test/Cases/UseCase/Schedule/ScheduleUseCaseCoroutineTest.php
 ```
+
+**Nota:** Testes de coroutine devem ser executados com `php vendor/bin/phpunit` (sem co-phpunit) para testar o processamento paralelo real.
 
 ## Principais Endpoints
 
@@ -148,6 +169,7 @@ docker compose exec application ./vendor/bin/phpunit test/Cases/UseCase/Account/
 ## Funcionalidades
 
 - ✅ Criação e gerenciamento de contas
+- ✅ Chaves PIX com validação completa (CPF, CNPJ, email, telefone, aleatória)
 - ✅ Saques imediatos com validação de saldo
 - ✅ Agendamento de saques
 - ✅ Processamento automático de saques agendados (Crontab)
@@ -155,6 +177,7 @@ docker compose exec application ./vendor/bin/phpunit test/Cases/UseCase/Account/
 - ✅ Histórico completo de transações
 - ✅ Autenticação JWT
 - ✅ Notificações por email (Mailhog)
+- ✅ Monitoramento com Prometheus/Grafana
 
 ## Crontab (Processamento Automático)
 
@@ -265,9 +288,9 @@ docker compose logs crontab | grep "Crontab task"
 [EMAIL] Email enviado para cliente@example.com
 ```
 
-## Funcionalidades
-- ✅ Documentação Swagger
-- ✅ 93 testes automatizados
+## Documentação e Testes
+- ✅ Documentação Swagger completa
+- ✅ 132 testes automatizados (93 originais + 31 PIX + 9 schedule)
 
 ## 💡 Sugestões de Melhorias
 
@@ -332,12 +355,14 @@ class WithdrawScheduledListener
 - **Circuit breaker** para serviços externos
 - **Health checks** e métricas (Prometheus/Grafana)
 
-# Debitos técnicos
+
+
+#  💡 Debitos técnicos
 
 ## Processamento de pagamentos
 
 
-### Versão 1
+### 🧠 Versão 1
 Será um possível problema da forma que está sendo entregue o projeto, nesse processo vejo que a melhor forma de ser feita com mais eficiência e performance é estrutura para essa funcionalidade é o Kafka (MSK) e o EKS Kubernets que são as ferramentas da AWS.
 
 Segue um desenho sugerido para melhoria:
@@ -346,7 +371,7 @@ Na opção abaixo pode ser que nós tenhamos algum problema de envio do e-mail e
 
 ![Kubernets pagamento](kubernets-pagamento-v1.drawio.svg)
 
-### Versão 2
-Na segunda versão existe a melhoria de entrega de e-mail ou nitificação para o usuário, essa versão ela deve seguir o padrão da estrutura principal pois o volume deve acompanhar a vazão, mas se a opção for por um baixo custo de para esse envio podemos mudar para SQS e Lambda como infra para os envios de e-mail ou usar uma step-functions se precisarmos enviar um conjunto de chamadas tais como SMS, E-mail, whatsapp ou push notification.
+### 🧠 Versão 2
+Na segunda versão existe a melhoria de entrega de e-mail ou notificação para o usuário, essa versão ela deve seguir o padrão da estrutura principal pois o volume deve acompanhar a vazão, mas se a opção for por um baixo custo de para esse envio podemos mudar para SQS e Lambda como infra para os envios de e-mail ou usar uma step-functions se precisarmos enviar um conjunto de chamadas tais como SMS, E-mail, whatsapp ou push notification.
 
 ![Kubernets pagamento](kubernets-pagamento-v2.drawio.svg)

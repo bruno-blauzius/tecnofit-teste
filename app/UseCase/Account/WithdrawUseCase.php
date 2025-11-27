@@ -8,10 +8,12 @@ use App\Model\Account;
 use App\Model\AccountWithdraw;
 use App\Model\AccountWithdrawPix;
 use App\Model\AccountTransactionHistory;
+use App\Model\PixKey;
 use App\Helper\EmailHelper;
 use App\UseCase\Account\Exception\AccountNotFoundException;
 use App\UseCase\Account\Exception\InsufficientBalanceException;
 use App\UseCase\Account\Exception\InvalidScheduleException;
+use App\UseCase\Account\Exception\PixKeyNotFoundException;
 use DateTimeImmutable;
 use Hyperf\DbConnection\Db;
 use Hyperf\Metric\Contract\CounterInterface;
@@ -29,6 +31,7 @@ final class WithdrawUseCase
         private readonly AccountWithdraw $withdrawModel,
         private readonly AccountWithdrawPix $withdrawPixModel,
         private readonly AccountTransactionHistory $transactionHistoryModel,
+        private readonly PixKey $pixKeyModel,
         ContainerInterface $container,
     ) {
         $factory = $container->get(\Hyperf\Metric\Contract\MetricFactoryInterface::class);
@@ -57,6 +60,8 @@ final class WithdrawUseCase
         try {
             $result = Db::transaction(function () use ($request, $type) {
             $account = $this->findAccount($request->accountId);
+
+            $this->validatePixKey($account->id);
 
             $this->validateSchedule($request);
             $this->validateAmount($account, $request->amount);
@@ -122,6 +127,22 @@ final class WithdrawUseCase
         }
 
         return $account;
+    }
+
+    private function validatePixKey(string $accountId): void
+    {
+        /** @var PixKey|null $pixKey */
+        $pixKey = $this->pixKeyModel
+            ->where('account_id', $accountId)
+            ->where('status', 'active')
+            ->whereNull('deleted_at')
+            ->first();
+
+        if ($pixKey === null) {
+            throw new PixKeyNotFoundException(
+                'Nenhuma chave PIX ativa encontrada para esta conta. Cadastre uma chave PIX antes de realizar saques.'
+            );
+        }
     }
 
     private function validateSchedule(WithdrawRequest $request): void

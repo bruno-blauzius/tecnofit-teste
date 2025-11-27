@@ -292,7 +292,10 @@ class AccountController extends AbstractController
         );
 
         try {
-            $result = $this->withdrawUseCase->execute($dto);
+
+            $result = $this->withdrawUseCase->execute(
+                $dto
+            );
 
             $message = $result['scheduled']
                 ? 'Saque agendado com sucesso.'

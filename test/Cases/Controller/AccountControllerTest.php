@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace HyperfTest\Cases\Controller;
 
 use App\Model\Account;
+use App\Model\PixKey;
 use Hyperf\Testing\TestCase;
 use Hyperf\DbConnection\Db;
 
@@ -14,6 +15,9 @@ class AccountControllerTest extends TestCase
     {
         parent::setUp();
         Db::statement('SET FOREIGN_KEY_CHECKS=0');
+        if (\Hyperf\Database\Schema\Schema::hasTable('pix_keys')) {
+            Db::table('pix_keys')->delete();
+        }
         if (\Hyperf\Database\Schema\Schema::hasTable('account_withdraw_pix')) {
             Db::table('account_withdraw_pix')->delete();
         }
@@ -110,6 +114,13 @@ class AccountControllerTest extends TestCase
     {
         $account = Account::create(['name' => 'Test Account', 'balance' => 1000]);
 
+        PixKey::create([
+            'account_id' => $account->id,
+            'key_type' => 'email',
+            'key_value' => 'test@example.com',
+            'status' => 'active',
+        ]);
+
         $response = $this->json("/api/v1/public/accounts/{$account->id}/balance/withdraw", [
             'method' => 'PIX',
             'pix' => [
@@ -134,6 +145,13 @@ class AccountControllerTest extends TestCase
     public function testWithdrawProcessesScheduledWithdraw()
     {
         $account = Account::create(['name' => 'Test Account', 'balance' => 1000]);
+
+        PixKey::create([
+            'account_id' => $account->id,
+            'key_type' => 'email',
+            'key_value' => 'test@example.com',
+            'status' => 'active',
+        ]);
 
         $response = $this->json("/api/v1/public/accounts/{$account->id}/balance/withdraw", [
             'method' => 'PIX',
@@ -175,6 +193,13 @@ class AccountControllerTest extends TestCase
     {
         $account = Account::create(['name' => 'Test Account', 'balance' => 50]);
 
+        PixKey::create([
+            'account_id' => $account->id,
+            'key_type' => 'email',
+            'key_value' => 'test@example.com',
+            'status' => 'active',
+        ]);
+
         $response = $this->json("/api/v1/public/accounts/{$account->id}/balance/withdraw", [
             'method' => 'PIX',
             'pix' => [
@@ -194,6 +219,13 @@ class AccountControllerTest extends TestCase
     public function testWithdrawReturns422ForPastSchedule()
     {
         $account = Account::create(['name' => 'Test Account', 'balance' => 1000]);
+
+        PixKey::create([
+            'account_id' => $account->id,
+            'key_type' => 'email',
+            'key_value' => 'test@example.com',
+            'status' => 'active',
+        ]);
 
         $response = $this->json("/api/v1/public/accounts/{$account->id}/balance/withdraw", [
             'method' => 'PIX',

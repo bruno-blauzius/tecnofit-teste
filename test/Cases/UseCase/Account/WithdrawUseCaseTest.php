@@ -8,11 +8,13 @@ use App\Model\Account;
 use App\Model\AccountWithdraw;
 use App\Model\AccountWithdrawPix;
 use App\Model\AccountTransactionHistory;
+use App\Model\PixKey;
 use App\UseCase\Account\WithdrawRequest;
 use App\UseCase\Account\WithdrawUseCase;
 use App\UseCase\Account\Exception\AccountNotFoundException;
 use App\UseCase\Account\Exception\InsufficientBalanceException;
 use App\UseCase\Account\Exception\InvalidScheduleException;
+use App\UseCase\Account\Exception\PixKeyNotFoundException;
 use DateTimeImmutable;
 use PHPUnit\Framework\TestCase;
 use Hyperf\DbConnection\Db;
@@ -25,6 +27,9 @@ class WithdrawUseCaseTest extends TestCase
     {
         parent::setUp();
         Db::statement('SET FOREIGN_KEY_CHECKS=0');
+        if (\Hyperf\Database\Schema\Schema::hasTable('pix_keys')) {
+            Db::table('pix_keys')->delete();
+        }
         if (\Hyperf\Database\Schema\Schema::hasTable('account_withdraw_pix')) {
             Db::table('account_withdraw_pix')->delete();
         }
@@ -36,17 +41,28 @@ class WithdrawUseCaseTest extends TestCase
         }
         Db::statement('SET FOREIGN_KEY_CHECKS=1');
 
+        $container = \Hyperf\Context\ApplicationContext::getContainer();
         $this->useCase = new WithdrawUseCase(
             new Account(),
             new AccountWithdraw(),
             new AccountWithdrawPix(),
-            new AccountTransactionHistory()
+            new AccountTransactionHistory(),
+            new PixKey(),
+            $container
         );
     }
 
     public function testExecuteProcessesImmediateWithdraw()
     {
         $account = Account::create(['name' => 'Test Account', 'balance' => 1000]);
+
+        // Criar chave PIX ativa para a conta
+        PixKey::create([
+            'account_id' => $account->id,
+            'key_type' => 'email',
+            'key_value' => 'teste@example.com',
+            'status' => 'active',
+        ]);
 
         $request = new WithdrawRequest(
             accountId: $account->id,
@@ -71,6 +87,15 @@ class WithdrawUseCaseTest extends TestCase
     public function testExecuteProcessesScheduledWithdraw()
     {
         $account = Account::create(['name' => 'Test Account', 'balance' => 1000]);
+
+        // Criar chave PIX ativa para a conta
+        PixKey::create([
+            'account_id' => $account->id,
+            'key_type' => 'email',
+            'key_value' => 'teste@example.com',
+            'status' => 'active',
+        ]);
+
         $scheduleAt = new DateTimeImmutable('2025-12-01 10:00:00');
 
         $request = new WithdrawRequest(
@@ -112,6 +137,14 @@ class WithdrawUseCaseTest extends TestCase
     {
         $account = Account::create(['name' => 'Test Account', 'balance' => 50]);
 
+        // Criar chave PIX ativa para a conta
+        PixKey::create([
+            'account_id' => $account->id,
+            'key_type' => 'email',
+            'key_value' => 'teste@example.com',
+            'status' => 'active',
+        ]);
+
         $this->expectException(InsufficientBalanceException::class);
         $this->expectExceptionMessage('Saldo insuficiente para o saque.');
 
@@ -129,7 +162,15 @@ class WithdrawUseCaseTest extends TestCase
 
     public function testExecuteThrowsExceptionForZeroAmount()
     {
-        $account = Account::create(['name' => 'Test Account', 'balance' => 1000]);
+        $account = Account::create(['name' => 'Test Account', 'balance' => 100]);
+
+        // Criar chave PIX ativa para a conta
+        PixKey::create([
+            'account_id' => $account->id,
+            'key_type' => 'email',
+            'key_value' => 'teste@example.com',
+            'status' => 'active',
+        ]);
 
         $this->expectException(InsufficientBalanceException::class);
         $this->expectExceptionMessage('O valor do saque deve ser maior que zero.');
@@ -148,7 +189,15 @@ class WithdrawUseCaseTest extends TestCase
 
     public function testExecuteThrowsExceptionForNegativeAmount()
     {
-        $account = Account::create(['name' => 'Test Account', 'balance' => 1000]);
+        $account = Account::create(['name' => 'Test Account', 'balance' => 100]);
+
+        // Criar chave PIX ativa para a conta
+        PixKey::create([
+            'account_id' => $account->id,
+            'key_type' => 'email',
+            'key_value' => 'teste@example.com',
+            'status' => 'active',
+        ]);
 
         $this->expectException(InsufficientBalanceException::class);
 
@@ -167,6 +216,15 @@ class WithdrawUseCaseTest extends TestCase
     public function testExecuteThrowsExceptionForPastSchedule()
     {
         $account = Account::create(['name' => 'Test Account', 'balance' => 1000]);
+
+        // Criar chave PIX ativa para a conta
+        PixKey::create([
+            'account_id' => $account->id,
+            'key_type' => 'email',
+            'key_value' => 'teste@example.com',
+            'status' => 'active',
+        ]);
+
         $pastDate = new DateTimeImmutable('2020-01-01 10:00:00');
 
         $this->expectException(InvalidScheduleException::class);
@@ -187,6 +245,14 @@ class WithdrawUseCaseTest extends TestCase
     public function testExecuteCreatesWithdrawAndPixRecords()
     {
         $account = Account::create(['name' => 'Test Account', 'balance' => 1000]);
+
+        // Criar chave PIX ativa para a conta
+        PixKey::create([
+            'account_id' => $account->id,
+            'key_type' => 'email',
+            'key_value' => 'teste@example.com',
+            'status' => 'active',
+        ]);
 
         $request = new WithdrawRequest(
             accountId: $account->id,
@@ -211,9 +277,37 @@ class WithdrawUseCaseTest extends TestCase
         $this->assertSame('test@example.com', $pix->key_value);
     }
 
+    public function testExecuteThrowsExceptionWhenNoActivePixKey()
+    {
+        $account = Account::create(['name' => 'Test Account', 'balance' => 1000]);
+
+        $this->expectException(PixKeyNotFoundException::class);
+        $this->expectExceptionMessage('Nenhuma chave PIX ativa encontrada para esta conta');
+
+        $request = new WithdrawRequest(
+            accountId: $account->id,
+            amount: 100,
+            method: 'PIX',
+            pixType: 'email',
+            pixKey: 'test@example.com',
+            scheduleAt: null
+        );
+
+        $this->useCase->execute($request);
+    }
+
     public function testExecuteRollsBackOnError()
     {
         $account = Account::create(['name' => 'Test Account', 'balance' => 1000]);
+
+        // Criar chave PIX ativa para a conta
+        PixKey::create([
+            'account_id' => $account->id,
+            'key_type' => 'email',
+            'key_value' => 'teste@example.com',
+            'status' => 'active',
+        ]);
+
         $initialBalance = $account->balance;
 
         try {
