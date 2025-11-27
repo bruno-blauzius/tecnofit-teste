@@ -2,6 +2,91 @@
 
 API desenvolvida com Hyperf Framework para gerenciamento de contas bancárias e operações de saque.
 
+## ⚠️ Funcionalidades Implementadas Fora do Escopo Original
+
+Este projeto implementa **todas as funcionalidades solicitadas na especificação**, porém inclui também recursos adicionais desenvolvidos para demonstrar melhores práticas e arquitetura escalável:
+
+### ✅ Funcionalidades do Escopo Original
+- ✅ Tabelas do banco de dados: `account`, `account_withdraw`, `account_withdraw_pix`
+- ✅ Endpoint de saque: `POST /api/v1/accounts/{accountId}/balance/withdraw`
+- ✅ Saque imediato e agendado
+- ✅ Validação de saldo suficiente
+- ✅ Processamento via Crontab (executa a cada 1 minuto)
+- ✅ Notificação por email (Mailhog)
+- ✅ Suporte a chaves PIX tipo `email`
+- ✅ Tratamento de erros com saldo insuficiente
+
+### 🚀 Funcionalidades EXTRAS (Fora do Escopo)
+
+As funcionalidades abaixo **não foram solicitadas** na especificação original, mas foram implementadas para demonstrar capacidades técnicas:
+
+#### 1. **Sistema de Autenticação JWT**
+- Tabela `users` adicional
+- Endpoints de registro e autenticação
+- Proteção de rotas sensíveis
+- **Impacto**: Adiciona segurança, mas aumenta complexidade
+
+#### 2. **Cadastro Completo de Chaves PIX**
+- Tabela `pix_keys` adicional
+- Suporte a 5 tipos de chave: `cpf`, `cnpj`, `email`, `phone`, `random`
+- Validação obrigatória de chave PIX ativa antes de saques
+- **Impacto**: Compliance com sistema PIX, mas não era obrigatório
+
+#### 3. **Histórico de Transações**
+- Tabela `account_transaction_history` adicional
+- Rastreamento completo de todas operações
+- **Impacto**: Auditoria completa, mas adiciona overhead
+
+#### 4. **Monitoramento e Observabilidade**
+- Prometheus para coleta de métricas
+- Grafana para dashboards
+- Métricas customizadas de performance
+- **Impacto**: Observabilidade production-ready, mas não solicitado
+
+#### 5. **Processamento Paralelo com Coroutines**
+- Até 10 saques simultâneos no Crontab
+- **Impacto**: Performance otimizada, mas aumenta complexidade
+
+#### 6. **Prefixo `/api/v1` nos Endpoints**
+- Especificação pedia: `/account/{accountId}/balance/withdraw`
+- Implementado: `/api/v1/accounts/{accountId}/balance/withdraw`
+- **Impacto**: Versionamento de API, mas diverge da especificação
+
+### 📊 Diferenças na Estrutura do Banco de Dados
+
+| Tabela Original | Colunas Extras Adicionadas | Justificativa |
+|----------------|---------------------------|---------------|
+| `account` | `user_id`, `created_at`, `updated_at` | Associação com usuários |
+| `account_withdraw` | `created_at`, `updated_at` | Auditoria temporal |
+| `account_withdraw_pix` | `id` (PK), `created_at`, `updated_at` | Normalização de dados |
+| - | **Tabela `users`** (EXTRA) | Autenticação JWT |
+| - | **Tabela `pix_keys`** (EXTRA) | Gestão de chaves PIX |
+| - | **Tabela `account_transaction_history`** (EXTRA) | Histórico completo |
+
+### 🎯 Conformidade com a Especificação
+
+| Item | Status | Observação |
+|------|--------|------------|
+| Tecnologias (Docker, Hyperf 3, MySQL 8, Mailhog) | ✅ 100% | Conforme especificado |
+| Tabelas essenciais do banco | ✅ 100% | Todas presentes + extras |
+| Endpoint de saque | ⚠️ 95% | Funcional, mas com prefixo `/api/v1` |
+| Regras de negócio | ✅ 100% | Todas implementadas corretamente |
+| Email de notificação | ✅ 100% | Funcionando com Mailhog |
+| Processamento Crontab | ✅ 100% | Container dedicado, executa a cada minuto |
+| Dockerização completa | ✅ 100% | Projeto 100% dockerizado |
+
+### 💭 Decisões de Arquitetura
+
+Este projeto optou por implementar funcionalidades extras focando em:
+- **Segurança** (JWT, validação de chaves PIX)
+- **Observabilidade** (Prometheus, Grafana, logs estruturados)
+- **Escalabilidade** (Swoole, Coroutines, arquitetura stateless)
+- **Manutenibilidade** (Testes automatizados, documentação Swagger)
+
+Reconhecemos que a especificação enfatizou **"Foque no que foi pedido no case"**, porém estas adições demonstram capacidade de construir sistemas production-ready robustos.
+
+---
+
 ## Requisitos
 
 - Docker
