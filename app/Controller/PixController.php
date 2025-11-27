@@ -15,6 +15,7 @@ namespace App\Controller;
 use App\Helper\EmailHelper;
 use App\Helper\JsonResponse;
 use App\Model\PixKey;
+use App\Model\Account;
 use App\Request\PixStoreRequest;
 use Hyperf\HttpServer\Contract\ResponseInterface;
 use Hyperf\Swagger\Annotation as SA;
@@ -105,11 +106,15 @@ class PixController
             'created_at' => date('Y-m-d H:i:s'),
         ]);
 
+        $account = Account::with('user')->find($accountId);
+
+
         // Envia email de confirmação de criação da chave PIX
         EmailHelper::sendPixKeyCreatedNotification(
             $accountId,
             $data['type'],
-            $data['key']
+            $data['key'],
+            $account->user->email ?? EmailHelper::DEFAULT_RECIPIENT
         );
 
         return JsonResponse::success(

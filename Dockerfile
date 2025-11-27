@@ -42,15 +42,17 @@ RUN set -ex \
 
 
 WORKDIR /opt/www
-## Aproveitar cache do docker para dependências
-# Copia apenas arquivos do composer primeiro para usar cache de camada
-COPY composer.json composer.lock* /opt/www/
 
-# Instala dependências (otimizado) durante o build
-RUN composer install --no-dev --prefer-dist --no-interaction --optimize-autoloader
+# Copia arquivos do composer para cache de camadas
+COPY composer.json composer.lock* /opt/www/
 
 # Copia o restante da aplicação
 COPY . /opt/www
+
+WORKDIR /opt/www
+
+# Instala dependências no build
+RUN composer install --no-interaction --prefer-dist --optimize-autoloader
 
 # Copia o entrypoint que garante composer install no start quando necessário
 COPY docker-entrypoint.sh /usr/local/bin/docker-entrypoint.sh

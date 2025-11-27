@@ -17,7 +17,7 @@ use PHPMailer\PHPMailer\PHPMailer;
 
 class EmailHelper
 {
-    private const DEFAULT_RECIPIENT = 'cliente@example.com';
+    public const DEFAULT_RECIPIENT = 'cliente@example.com';
 
     private const SENDER_EMAIL = 'noreply@tecnofit.com.br';
 

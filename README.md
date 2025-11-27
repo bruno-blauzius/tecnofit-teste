@@ -55,15 +55,41 @@ MYSQL_ROOT_PASSWORD=Napoleao1689!
 docker compose up -d --build
 ```
 
-### 4. Execute as migrations
+**Aguarde alguns minutos** para que o Composer instale todas as dependências automaticamente. Você pode acompanhar o progresso com:
 
 ```bash
-# Aplicar migrations no banco de testes
-docker compose exec application php migrate-test.php migrate:fresh
-
-# Aplicar migrations no banco principal
-docker compose exec application php bin/hyperf.php migrate:fresh
+docker logs application -f
 ```
+
+Aguarde até ver a mensagem indicando que o servidor Hyperf iniciou com sucesso.
+
+### 4. Execute as migrations
+
+As migrations devem ser executadas manualmente;
+
+```bash
+# Aplicar migrations no banco principal
+docker exec application php bin/hyperf.php migrate
+
+docker exec application php bin/hyperf.php migrate --database=hyperf_test
+
+# Conectar ao banco principal
+docker exec -it tecnofit-database mysql -uroot -p'Napoleao1689!' tecnofit
+
+e execute o comando SHOW TABLES;
+```
+
+Ou execute as migrations manualmente conectando ao MySQL:
+
+```bash
+# Conectar ao banco principal
+docker exec -it tecnofit-database mysql -uroot -p'Napoleao1689!' tecnofit
+
+# Conectar ao banco de testes
+docker exec -it tecnofit-database-test mysql -uroot -proot hyperf_test
+```
+
+Depois copie e execute o conteúdo SQL de cada arquivo em `migrations/`.
 
 ### 5. Acesse a aplicação
 

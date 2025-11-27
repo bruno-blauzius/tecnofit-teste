@@ -30,7 +30,7 @@ return new class extends Migration {
 
             $table->foreign('account_id')
                 ->references('id')
-                ->on('accounts')
+                ->on('account')
                 ->onDelete('cascade');
         });
     }

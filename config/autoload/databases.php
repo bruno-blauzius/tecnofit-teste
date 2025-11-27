@@ -58,4 +58,32 @@ return [
             ],
         ],
     ],
+    'hyperf_test' => [
+        'driver' => 'mysql',
+        'host' => 'tecnofit-database-test',
+        'port' => 3306,
+        'database' => 'hyperf_test',
+        'username' => 'root',
+        'password' => 'root',
+        'charset' => 'utf8mb4',
+        'collation' => 'utf8mb4_unicode_ci',
+        'prefix' => '',
+        'pool' => [
+            'min_connections' => 1,
+            'max_connections' => 10,
+            'connect_timeout' => 10.0,
+            'wait_timeout' => 3.0,
+            'heartbeat' => -1,
+            'max_idle_time' => 60,
+        ],
+        'commands' => [
+            'gen:model' => [
+                'path' => 'app/Model',
+                'force_casts' => true,
+                'inheritance' => 'Model',
+                'uses' => '',
+                'table_mapping' => [],
+            ],
+        ],
+    ],
 ];
