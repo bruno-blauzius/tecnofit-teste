@@ -52,6 +52,7 @@ class AccountController extends AbstractController
             content: new OA\JsonContent(
                 required: ['balance'],
                 properties: [
+                    new OA\Property(property: 'name', type: 'string', example: 'John Doe'),
                     new OA\Property(property: 'balance', type: 'number', format: 'float', example: 100.00),
                 ]
             )
@@ -170,13 +171,13 @@ class AccountController extends AbstractController
     #[OA\Get(
         path: '/api/v1/accounts',
         summary: 'Listar todas as contas',
-        description: 'Retorna uma lista de todas as contas cadastradas',
+        description: 'Retorna uma lista de todas as contas cadastradas com seus usuários e chaves PIX',
         security: [['bearerAuth' => []]],
         tags: ['Contas'],
         responses: [
             new OA\Response(
                 response: 200,
-                description: 'Lista de contas',
+                description: 'Lista de contas com relacionamentos',
                 content: new OA\JsonContent(
                     properties: [
                         new OA\Property(property: 'success', type: 'boolean', example: true),
@@ -185,8 +186,39 @@ class AccountController extends AbstractController
                             type: 'array',
                             items: new OA\Items(
                                 properties: [
-                                    new OA\Property(property: 'id', type: 'string', format: 'uuid'),
-                                    new OA\Property(property: 'balance', type: 'number', format: 'float', example: 100.00),
+                                    new OA\Property(property: 'id', type: 'string', format: 'uuid', example: '550e8400-e29b-41d4-a716-446655440000'),
+                                    new OA\Property(property: 'name', type: 'string', example: 'Conta Principal'),
+                                    new OA\Property(property: 'balance', type: 'number', format: 'float', example: 1500.50),
+                                    new OA\Property(property: 'user_id', type: 'string', format: 'uuid', example: '550e8400-e29b-41d4-a716-446655440001'),
+                                    new OA\Property(property: 'created_at', type: 'string', format: 'date-time', example: '2024-01-15T10:30:00Z'),
+                                    new OA\Property(property: 'updated_at', type: 'string', format: 'date-time', example: '2024-01-15T10:30:00Z'),
+                                    new OA\Property(
+                                        property: 'user',
+                                        properties: [
+                                            new OA\Property(property: 'id', type: 'string', format: 'uuid', example: '550e8400-e29b-41d4-a716-446655440001'),
+                                            new OA\Property(property: 'name', type: 'string', example: 'João Silva'),
+                                            new OA\Property(property: 'email', type: 'string', format: 'email', example: 'joao@example.com'),
+                                            new OA\Property(property: 'created_at', type: 'string', format: 'date-time', example: '2024-01-15T10:30:00Z'),
+                                            new OA\Property(property: 'updated_at', type: 'string', format: 'date-time', example: '2024-01-15T10:30:00Z'),
+                                        ],
+                                        type: 'object',
+                                        nullable: true
+                                    ),
+                                    new OA\Property(
+                                        property: 'pix_keys',
+                                        type: 'array',
+                                        items: new OA\Items(
+                                            properties: [
+                                                new OA\Property(property: 'id', type: 'string', format: 'uuid', example: '550e8400-e29b-41d4-a716-446655440002'),
+                                                new OA\Property(property: 'account_id', type: 'string', format: 'uuid', example: '550e8400-e29b-41d4-a716-446655440000'),
+                                                new OA\Property(property: 'type', type: 'string', enum: ['cpf', 'cnpj', 'email', 'phone', 'random'], example: 'cpf'),
+                                                new OA\Property(property: 'key', type: 'string', example: '12345678900'),
+                                                new OA\Property(property: 'created_at', type: 'string', format: 'date-time', example: '2024-01-15T10:30:00Z'),
+                                                new OA\Property(property: 'updated_at', type: 'string', format: 'date-time', example: '2024-01-15T10:30:00Z'),
+                                            ],
+                                            type: 'object'
+                                        )
+                                    ),
                                 ],
                                 type: 'object'
                             )
@@ -198,7 +230,7 @@ class AccountController extends AbstractController
     )]
     public function index(RequestInterface $request, ResponseInterface $response)
     {
-        $accounts = Account::all()->toArray();
+        $accounts = Account::with(['pixKeys', 'user'])->get()->toArray();
         return JsonResponse::success($response, $accounts);
     }
 

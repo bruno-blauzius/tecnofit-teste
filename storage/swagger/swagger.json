@@ -18,11 +18,11 @@
                     "Contas"
                 ],
                 "summary": "Listar todas as contas",
-                "description": "Retorna uma lista de todas as contas cadastradas",
+                "description": "Retorna uma lista de todas as contas cadastradas com seus usuários e chaves PIX",
                 "operationId": "36472b568084733748dd5af6019d7752",
                 "responses": {
                     "200": {
-                        "description": "Lista de contas",
+                        "description": "Lista de contas com relacionamentos",
                         "content": {
                             "application/json": {
                                 "schema": {
@@ -37,12 +37,105 @@
                                                 "properties": {
                                                     "id": {
                                                         "type": "string",
-                                                        "format": "uuid"
+                                                        "format": "uuid",
+                                                        "example": "550e8400-e29b-41d4-a716-446655440000"
+                                                    },
+                                                    "name": {
+                                                        "type": "string",
+                                                        "example": "Conta Principal"
                                                     },
                                                     "balance": {
                                                         "type": "number",
                                                         "format": "float",
-                                                        "example": 100
+                                                        "example": 1500.5
+                                                    },
+                                                    "user_id": {
+                                                        "type": "string",
+                                                        "format": "uuid",
+                                                        "example": "550e8400-e29b-41d4-a716-446655440001"
+                                                    },
+                                                    "created_at": {
+                                                        "type": "string",
+                                                        "format": "date-time",
+                                                        "example": "2024-01-15T10:30:00Z"
+                                                    },
+                                                    "updated_at": {
+                                                        "type": "string",
+                                                        "format": "date-time",
+                                                        "example": "2024-01-15T10:30:00Z"
+                                                    },
+                                                    "user": {
+                                                        "properties": {
+                                                            "id": {
+                                                                "type": "string",
+                                                                "format": "uuid",
+                                                                "example": "550e8400-e29b-41d4-a716-446655440001"
+                                                            },
+                                                            "name": {
+                                                                "type": "string",
+                                                                "example": "João Silva"
+                                                            },
+                                                            "email": {
+                                                                "type": "string",
+                                                                "format": "email",
+                                                                "example": "joao@example.com"
+                                                            },
+                                                            "created_at": {
+                                                                "type": "string",
+                                                                "format": "date-time",
+                                                                "example": "2024-01-15T10:30:00Z"
+                                                            },
+                                                            "updated_at": {
+                                                                "type": "string",
+                                                                "format": "date-time",
+                                                                "example": "2024-01-15T10:30:00Z"
+                                                            }
+                                                        },
+                                                        "type": "object",
+                                                        "nullable": true
+                                                    },
+                                                    "pix_keys": {
+                                                        "type": "array",
+                                                        "items": {
+                                                            "properties": {
+                                                                "id": {
+                                                                    "type": "string",
+                                                                    "format": "uuid",
+                                                                    "example": "550e8400-e29b-41d4-a716-446655440002"
+                                                                },
+                                                                "account_id": {
+                                                                    "type": "string",
+                                                                    "format": "uuid",
+                                                                    "example": "550e8400-e29b-41d4-a716-446655440000"
+                                                                },
+                                                                "type": {
+                                                                    "type": "string",
+                                                                    "enum": [
+                                                                        "cpf",
+                                                                        "cnpj",
+                                                                        "email",
+                                                                        "phone",
+                                                                        "random"
+                                                                    ],
+                                                                    "example": "cpf"
+                                                                },
+                                                                "key": {
+                                                                    "type": "string",
+                                                                    "example": "12345678900"
+                                                                },
+                                                                "created_at": {
+                                                                    "type": "string",
+                                                                    "format": "date-time",
+                                                                    "example": "2024-01-15T10:30:00Z"
+                                                                },
+                                                                "updated_at": {
+                                                                    "type": "string",
+                                                                    "format": "date-time",
+                                                                    "example": "2024-01-15T10:30:00Z"
+                                                                }
+                                                            },
+                                                            "type": "object"
+                                                        }
                                                     }
                                                 },
                                                 "type": "object"
@@ -77,6 +170,10 @@
                                     "balance"
                                 ],
                                 "properties": {
+                                    "name": {
+                                        "type": "string",
+                                        "example": "John Doe"
+                                    },
                                     "balance": {
                                         "type": "number",
                                         "format": "float",

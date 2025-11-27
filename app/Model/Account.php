@@ -61,4 +61,9 @@ class Account extends Model
     {
         return $this->hasOne(User::class, 'account_id', 'id');
     }
+
+    public function pixKeys()
+    {
+        return $this->hasMany(PixKey::class, 'account_id', 'id');
+    }
 }
