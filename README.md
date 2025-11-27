@@ -102,6 +102,7 @@ O Mailhog está configurado no `docker-compose.yml`:
 A aplicação envia emails automáticos para:
 
 - ✉️ **Transações bem-sucedidas** (depósito, crédito, débito)
+- ✉️ **Cadastro de chave PIX** confirmado
 - ✉️ **Saques agendados** confirmados
 - ✉️ **Saques agendados processados** com sucesso
 - ✉️ **Erros no processamento** de saques agendados
@@ -170,16 +171,17 @@ docker compose exec application php vendor/bin/phpunit test/Cases/UseCase/Schedu
 ## Funcionalidades
 
 - ✅ Criação e gerenciamento de contas
-- ✅ **Chaves PIX com validação completa (CPF, CNPJ, email, telefone, aleatória)** *(feature adicional)*
-- ✅ **Validação obrigatória de chave PIX ativa antes de saques** *(feature adicional)*
+- ✅ **Cadastro de chaves PIX com validação completa (CPF, CNPJ, email, telefone, aleatória)** *(fora do escopo)*
+- ✅ **Notificação por email na confirmação de cadastro de chave PIX** *(fora do escopo)*
+- ✅ **Validação obrigatória de chave PIX ativa antes de saques** *(fora do escopo)*
 - ✅ Saques imediatos com validação de saldo
 - ✅ Agendamento de saques
 - ✅ Processamento automático de saques agendados (Crontab)
 - ✅ Processamento paralelo com Coroutines (até 10 jobs simultâneos)
-- ✅ **Histórico completo de transações** *(feature adicional)*
-- ✅ **Autenticação JWT** *(feature adicional)*
+- ✅ **Histórico completo de transações** *(fora do escopo)*
+- ✅ **Autenticação JWT** *(fora do escopo)*
 - ✅ Notificações por email (Mailhog)
-- ✅ **Monitoramento com Prometheus/Grafana** *(feature adicional)*
+- ✅ **Monitoramento com Prometheus/Grafana** *(fora do escopo)*
 
 ## Crontab (Processamento Automático)
 

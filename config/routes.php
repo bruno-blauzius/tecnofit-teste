@@ -12,6 +12,7 @@ declare(strict_types=1);
 
 use App\Controller\IndexController;
 use App\Controller\AccountController;
+use App\Controller\PixController;
 use App\Controller\AuthController;
 use App\Controller\RegisterController;
 use App\Controller\SwaggerUIController;
@@ -34,6 +35,7 @@ Router::get('/swagger.json', [SwaggerUIController::class, 'json']);
         Router::get('/accounts', [AccountController::class, 'index']);
         Router::post('/accounts', [AccountController::class, 'store']);
         Router::post('/accounts/{accountId}/balance/withdraw', [AccountController::class, 'withdraw']);
+        Router::post('/accounts/{accountId}/pix', [PixController::class, 'store']);
         Router::post('/register', [RegisterController::class, 'store']);
         Router::post('/auth', [AuthController::class, 'authenticate']);
     });
@@ -48,6 +50,11 @@ Router::get('/swagger.json', [SwaggerUIController::class, 'json']);
         Router::post('/accounts', [AccountController::class, 'store']);
         Router::put('/accounts/{accountId}', [AccountController::class, 'update']);
         Router::post('/accounts/{accountId}/balance/withdraw', [AccountController::class, 'withdraw']);
+
+        /**
+         * Pix Routes
+         */
+        Router::post('/accounts/{accountId}/pix', [PixController::class, 'store']);
 
         /**
          * Register route

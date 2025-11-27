@@ -519,6 +519,213 @@
                 }
             }
         },
+        "/api/v1/accounts/{accountId}/pix": {
+            "post": {
+                "tags": [
+                    "PIX"
+                ],
+                "summary": "Cadastrar chave PIX",
+                "operationId": "fbb9f1e95f835916faa240116e606e04",
+                "parameters": [
+                    {
+                        "name": "accountId",
+                        "in": "path",
+                        "description": "ID da conta",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "description": "Dados da chave PIX",
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "type",
+                                    "key"
+                                ],
+                                "properties": {
+                                    "type": {
+                                        "description": "Tipo da chave PIX",
+                                        "type": "string",
+                                        "enum": [
+                                            "cpf",
+                                            "cnpj",
+                                            "email",
+                                            "phone",
+                                            "random"
+                                        ],
+                                        "rules": null,
+                                        "attribute": null
+                                    },
+                                    "key": {
+                                        "description": "Valor da chave PIX",
+                                        "type": "string",
+                                        "example": "teste@example.com",
+                                        "rules": null,
+                                        "attribute": null
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    },
+                    "_content": {
+                        "required": [
+                            "type",
+                            "key"
+                        ],
+                        "properties": {
+                            "type": {
+                                "description": "Tipo da chave PIX",
+                                "type": "string",
+                                "enum": [
+                                    "cpf",
+                                    "cnpj",
+                                    "email",
+                                    "phone",
+                                    "random"
+                                ],
+                                "rules": null,
+                                "attribute": null
+                            },
+                            "key": {
+                                "description": "Valor da chave PIX",
+                                "type": "string",
+                                "example": "teste@example.com",
+                                "rules": null,
+                                "attribute": null
+                            }
+                        },
+                        "type": "object"
+                    }
+                },
+                "responses": {
+                    "201": {
+                        "description": "Chave PIX cadastrada com sucesso",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "success": {
+                                            "type": "boolean",
+                                            "example": true,
+                                            "rules": null,
+                                            "attribute": null
+                                        },
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Chave PIX criada com sucesso",
+                                            "rules": null,
+                                            "attribute": null
+                                        },
+                                        "data": {
+                                            "properties": {
+                                                "id": {
+                                                    "type": "integer",
+                                                    "example": 1,
+                                                    "rules": null,
+                                                    "attribute": null
+                                                },
+                                                "account_id": {
+                                                    "type": "string",
+                                                    "example": "1",
+                                                    "rules": null,
+                                                    "attribute": null
+                                                },
+                                                "key_type": {
+                                                    "type": "string",
+                                                    "example": "email",
+                                                    "rules": null,
+                                                    "attribute": null
+                                                },
+                                                "key_value": {
+                                                    "type": "string",
+                                                    "example": "teste@example.com",
+                                                    "rules": null,
+                                                    "attribute": null
+                                                },
+                                                "status": {
+                                                    "type": "string",
+                                                    "example": "active",
+                                                    "rules": null,
+                                                    "attribute": null
+                                                },
+                                                "created_at": {
+                                                    "type": "string",
+                                                    "example": "2024-01-15 10:30:00",
+                                                    "rules": null,
+                                                    "attribute": null
+                                                }
+                                            },
+                                            "type": "object",
+                                            "rules": null,
+                                            "attribute": null
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "422": {
+                        "description": "Erro de validação",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "success": {
+                                            "type": "boolean",
+                                            "example": false,
+                                            "rules": null,
+                                            "attribute": null
+                                        },
+                                        "message": {
+                                            "type": "string",
+                                            "example": "The given data was invalid",
+                                            "rules": null,
+                                            "attribute": null
+                                        },
+                                        "errors": {
+                                            "properties": {
+                                                "type": {
+                                                    "type": "array",
+                                                    "items": {
+                                                        "type": "string"
+                                                    },
+                                                    "rules": null,
+                                                    "attribute": null
+                                                },
+                                                "key": {
+                                                    "type": "array",
+                                                    "items": {
+                                                        "type": "string"
+                                                    },
+                                                    "rules": null,
+                                                    "attribute": null
+                                                }
+                                            },
+                                            "type": "object",
+                                            "rules": null,
+                                            "attribute": null
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "bearer": []
+                    }
+                ]
+            }
+        },
         "/api/v1/public/register": {
             "post": {
                 "tags": [
@@ -715,6 +922,10 @@
         {
             "name": "Autenticação",
             "description": "Autenticação"
+        },
+        {
+            "name": "PIX",
+            "description": "PIX"
         },
         {
             "name": "Registro",

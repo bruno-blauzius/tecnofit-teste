@@ -218,4 +218,50 @@ class EmailHelper
 
         return self::sendEmail($recipientEmail, $subject, $htmlBody, $textBody);
     }
+
+    /**
+     * Envia um email de confirmação de criação de chave PIX
+     */
+    public static function sendPixKeyCreatedNotification(
+        string $accountId,
+        string $keyType,
+        string $keyValue,
+        string $recipientEmail = self::DEFAULT_RECIPIENT
+    ): bool {
+        $keyTypeLabels = [
+            'cpf' => 'CPF',
+            'cnpj' => 'CNPJ',
+            'email' => 'E-mail',
+            'phone' => 'Telefone',
+            'random' => 'Chave Aleatória',
+        ];
+
+        $keyTypeLabel = $keyTypeLabels[$keyType] ?? 'Chave PIX';
+        $subject = 'Chave PIX Criada com Sucesso';
+
+        $htmlBody = sprintf(
+            '<h2>Chave PIX Cadastrada</h2>
+            <p>Sua chave PIX foi criada com sucesso!</p>
+            <ul>
+                <li><strong>Conta:</strong> %s</li>
+                <li><strong>Tipo de Chave:</strong> %s</li>
+                <li><strong>Chave:</strong> %s</li>
+                <li><strong>Status:</strong> Ativa</li>
+            </ul>
+            <p>Agora você pode receber transferências usando esta chave PIX.</p>
+            <p><em>Se você não reconhece esta operação, entre em contato com o suporte imediatamente.</em></p>',
+            $accountId,
+            $keyTypeLabel,
+            $keyValue
+        );
+
+        $textBody = sprintf(
+            "Chave PIX Cadastrada\n\nSua chave PIX foi criada com sucesso!\n\nConta: %s\nTipo de Chave: %s\nChave: %s\nStatus: Ativa\n\nAgora você pode receber transferências usando esta chave PIX.\n\nSe você não reconhece esta operação, entre em contato com o suporte imediatamente.",
+            $accountId,
+            $keyTypeLabel,
+            $keyValue
+        );
+
+        return self::sendEmail($recipientEmail, $subject, $htmlBody, $textBody);
+    }
 }
