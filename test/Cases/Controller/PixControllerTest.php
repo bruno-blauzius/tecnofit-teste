@@ -114,4 +114,33 @@ class PixControllerTest extends TestCase
 
         $response->assertStatus(422);
     }
+
+    public function testStoreValidatesUniquePixKey()
+    {
+        $account = Account::create([
+            'name' => 'Test Account',
+            'balance' => 1000.00,
+        ]);
+
+        // Cria primeira chave PIX
+        $response = $this->json("/api/v1/public/accounts/{$account->id}/pix", [
+            'type' => 'email',
+            'key' => 'duplicado@example.com',
+        ]);
+
+        $response->assertStatus(201);
+
+        // Tenta criar a mesma chave PIX novamente
+        $response = $this->json("/api/v1/public/accounts/{$account->id}/pix", [
+            'type' => 'email',
+            'key' => 'duplicado@example.com',
+        ]);
+
+        $response->assertStatus(422);
+
+        $result = $response->json();
+        $this->assertArrayHasKey('errors', $result);
+        $this->assertArrayHasKey('key', $result['errors']);
+    }
 }
+

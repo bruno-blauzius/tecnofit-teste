@@ -27,7 +27,7 @@ class PixStoreRequest extends FormRequest
     {
         return [
             'type'  => 'required|string|in:email,cpf,cnpj,phone,random',
-            'key'   => 'required|string',
+            'key'   => 'required|string|unique:pix_keys,key_value',
         ];
     }
 
@@ -51,6 +51,7 @@ class PixStoreRequest extends FormRequest
             'type.required' => 'O campo :attribute é obrigatório.',
             'type.in'       => 'O :attribute deve ser um dos seguintes valores: email, cpf, cnpj, phone ou random.',
             'key.required'  => 'A :attribute é obrigatória.',
+            'key.unique'    => 'Esta chave PIX já está cadastrada no sistema.',
         ];
     }
 
