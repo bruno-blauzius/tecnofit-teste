@@ -1,21 +1,28 @@
 <?php
 
 declare(strict_types=1);
+/**
+ * This file is part of Hyperf.
+ *
+ * @link     https://www.hyperf.io
+ * @document https://hyperf.wiki
+ * @contact  group@hyperf.io
+ * @license  https://github.com/hyperf/hyperf/blob/master/LICENSE
+ */
 
 namespace HyperfTest\Cases\Request;
 
 use App\Request\AccountStoreRequest;
+use Mockery;
 use PHPUnit\Framework\TestCase;
 use Psr\Container\ContainerInterface;
 
+/**
+ * @internal
+ * @coversNothing
+ */
 class AccountStoreRequestTest extends TestCase
 {
-    private function createRequest(): AccountStoreRequest
-    {
-        $container = \Mockery::mock(ContainerInterface::class);
-        return new AccountStoreRequest($container);
-    }
-
     public function testAuthorizeReturnsTrue()
     {
         $request = $this->createRequest();
@@ -50,5 +57,11 @@ class AccountStoreRequestTest extends TestCase
 
         $this->assertArrayHasKey('balance', $attributes);
         $this->assertIsString($attributes['balance']);
+    }
+
+    private function createRequest(): AccountStoreRequest
+    {
+        $container = Mockery::mock(ContainerInterface::class);
+        return new AccountStoreRequest($container);
     }
 }

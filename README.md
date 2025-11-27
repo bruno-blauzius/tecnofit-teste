@@ -142,6 +142,84 @@ docker compose exec application php vendor/bin/phpunit test/Cases/UseCase/Schedu
 
 **Nota:** Testes de coroutine devem ser executados com `php vendor/bin/phpunit` (sem co-phpunit) para testar o processamento paralelo real.
 
+### Testes de Qualidade e Validação
+
+Antes de cada commit, execute as ferramentas de validação para garantir a qualidade do código:
+
+#### 1. PHPStan - Análise Estática
+
+```bash
+docker exec application composer analyse
+```
+
+**Motivo:** Detecta erros de tipo, bugs potenciais e problemas de compatibilidade antes da execução. Analisa o código estaticamente sem executá-lo, identificando:
+- Erros de tipo de dados
+- Métodos/propriedades inexistentes
+- Código morto ou inacessível
+- Possíveis null pointer exceptions
+
+**Documentação:** [PHPStan Documentation](https://phpstan.org/user-guide/getting-started)
+
+#### 2. PHP-CS-Fixer - Formatação de Código
+
+```bash
+docker exec application composer cs-fix
+```
+
+**Motivo:** Garante padronização do código seguindo PSR-12, melhorando legibilidade e manutenibilidade. Corrige automaticamente:
+- Indentação e espaçamento
+- Organização de imports
+- Formatação de arrays e estruturas
+- Convenções de nomenclatura
+
+**Documentação:** [PHP-CS-Fixer Documentation](https://cs.symfony.com/)
+
+#### 3. PHPUnit - Testes Automatizados
+
+```bash
+docker exec application composer test
+```
+
+**Motivo:** Valida o comportamento esperado de todas as funcionalidades, garantindo que alterações não quebrem código existente. Testa:
+- Endpoints da API (status codes, JSON responses)
+- Regras de negócio (saques, PIX, validações)
+- Integridade de dados no banco
+- Envio de notificações por email
+
+**Documentação:** [PHPUnit Documentation](https://phpunit.de/documentation.html)
+
+### Testes PIX *(Fora do Escopo)*
+
+O projeto possui 4 testes específicos para cadastro de chaves PIX:
+
+```bash
+docker exec application composer test -- --filter PixControllerTest
+```
+
+**Testes implementados:**
+
+1. **testStoreCreatesPixKeyAndSendsEmail**
+   - Verifica criação de chave PIX tipo email
+   - Valida envio de notificação por email
+   - Confirma registro no banco de dados
+
+2. **testStoreCreatesPixKeyWithDifferentTypes**
+   - Testa cadastro com CPF, telefone e chave aleatória
+   - Valida formatação de diferentes tipos de chave
+   - Confirma envio de email para cada cadastro
+
+3. **testStoreValidatesRequiredFields**
+   - Valida campos obrigatórios (type e key)
+   - Confirma retorno HTTP 422 em erros de validação
+   - Testa mensagens de erro apropriadas
+
+4. **testStoreValidatesUniquePixKey**
+   - Garante unicidade de chaves PIX no sistema
+   - Impede cadastro de chave duplicada
+   - Valida constraint UNIQUE do banco de dados
+
+**Documentação PIX:** [Banco Central - Especificações PIX](https://www.bcb.gov.br/estabilidadefinanceira/pix)
+
 ## Principais Endpoints
 
 ### Endpoints Públicos (sem autenticação)

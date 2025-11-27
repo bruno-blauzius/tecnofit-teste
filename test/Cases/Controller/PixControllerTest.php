@@ -1,14 +1,27 @@
 <?php
 
 declare(strict_types=1);
+/**
+ * This file is part of Hyperf.
+ *
+ * @link     https://www.hyperf.io
+ * @document https://hyperf.wiki
+ * @contact  group@hyperf.io
+ * @license  https://github.com/hyperf/hyperf/blob/master/LICENSE
+ */
 
 namespace HyperfTest\Cases\Controller;
 
 use App\Model\Account;
 use App\Model\PixKey;
-use Hyperf\Testing\TestCase;
+use Hyperf\Database\Schema\Schema;
 use Hyperf\DbConnection\Db;
+use Hyperf\Testing\TestCase;
 
+/**
+ * @internal
+ * @coversNothing
+ */
 class PixControllerTest extends TestCase
 {
     protected function setUp(): void
@@ -16,10 +29,10 @@ class PixControllerTest extends TestCase
         parent::setUp();
         // Limpa as tabelas antes de cada teste
         Db::statement('SET FOREIGN_KEY_CHECKS=0');
-        if (\Hyperf\Database\Schema\Schema::hasTable('pix_keys')) {
+        if (Schema::hasTable('pix_keys')) {
             Db::table('pix_keys')->delete();
         }
-        if (\Hyperf\Database\Schema\Schema::hasTable('account')) {
+        if (Schema::hasTable('account')) {
             Db::table('account')->delete();
         }
         Db::statement('SET FOREIGN_KEY_CHECKS=1');
@@ -143,4 +156,3 @@ class PixControllerTest extends TestCase
         $this->assertArrayHasKey('key', $result['errors']);
     }
 }
-

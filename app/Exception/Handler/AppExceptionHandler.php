@@ -15,9 +15,9 @@ namespace App\Exception\Handler;
 use Hyperf\Contract\StdoutLoggerInterface;
 use Hyperf\ExceptionHandler\ExceptionHandler;
 use Hyperf\HttpMessage\Stream\SwooleStream;
+use Hyperf\Validation\ValidationException;
 use Psr\Http\Message\ResponseInterface;
 use Throwable;
-use Hyperf\Validation\ValidationException as ValidationException;
 
 class AppExceptionHandler extends ExceptionHandler
 {

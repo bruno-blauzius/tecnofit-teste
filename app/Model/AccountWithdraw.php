@@ -1,11 +1,19 @@
 <?php
 
 declare(strict_types=1);
+/**
+ * This file is part of Hyperf.
+ *
+ * @link     https://www.hyperf.io
+ * @document https://hyperf.wiki
+ * @contact  group@hyperf.io
+ * @license  https://github.com/hyperf/hyperf/blob/master/LICENSE
+ */
 
 namespace App\Model;
 
-use Hyperf\DbConnection\Model\Model;
 use Hyperf\Database\Model\Events\Creating;
+use Hyperf\DbConnection\Model\Model;
 use Ramsey\Uuid\Uuid;
 
 /**
@@ -14,20 +22,20 @@ use Ramsey\Uuid\Uuid;
  * @property string $method
  * @property string $amount
  * @property bool $scheduled
- * @property string|null $scheduled_for
+ * @property null|string $scheduled_for
  * @property bool $done
  * @property bool $error
- * @property string|null $error_reason
+ * @property null|string $error_reason
  */
 class AccountWithdraw extends Model
 {
+    public bool $incrementing = false;
+
     protected ?string $table = 'account_withdraw';
 
     protected string $primaryKey = 'id';
 
     protected string $keyType = 'string';
-
-    public bool $incrementing = false;
 
     protected array $fillable = [
         'id',
@@ -42,17 +50,17 @@ class AccountWithdraw extends Model
     ];
 
     protected array $casts = [
-        'amount'        => 'decimal:2',
-        'scheduled'     => 'bool',
-        'done'          => 'bool',
-        'error'         => 'bool',
+        'amount' => 'decimal:2',
+        'scheduled' => 'bool',
+        'done' => 'bool',
+        'error' => 'bool',
         'scheduled_for' => 'datetime',
     ];
 
     public function creating(Creating $event)
     {
         $model = $event->getModel();
-        if (!isset($model->id) || empty($model->id)) {
+        if (! isset($model->id) || empty($model->id)) {
             $model->id = Uuid::uuid4()->toString();
         }
     }

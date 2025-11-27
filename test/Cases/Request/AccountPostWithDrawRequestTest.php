@@ -1,21 +1,28 @@
 <?php
 
 declare(strict_types=1);
+/**
+ * This file is part of Hyperf.
+ *
+ * @link     https://www.hyperf.io
+ * @document https://hyperf.wiki
+ * @contact  group@hyperf.io
+ * @license  https://github.com/hyperf/hyperf/blob/master/LICENSE
+ */
 
 namespace HyperfTest\Cases\Request;
 
 use App\Request\AccountPostWithDrawRequest;
+use Mockery;
 use PHPUnit\Framework\TestCase;
 use Psr\Container\ContainerInterface;
 
+/**
+ * @internal
+ * @coversNothing
+ */
 class AccountPostWithDrawRequestTest extends TestCase
 {
-    private function createRequest(): AccountPostWithDrawRequest
-    {
-        $container = \Mockery::mock(ContainerInterface::class);
-        return new AccountPostWithDrawRequest($container);
-    }
-
     public function testAuthorizeReturnsTrue()
     {
         $request = $this->createRequest();
@@ -113,5 +120,11 @@ class AccountPostWithDrawRequestTest extends TestCase
             $this->assertIsString($attribute);
             $this->assertNotEmpty($attribute);
         }
+    }
+
+    private function createRequest(): AccountPostWithDrawRequest
+    {
+        $container = Mockery::mock(ContainerInterface::class);
+        return new AccountPostWithDrawRequest($container);
     }
 }

@@ -1,11 +1,19 @@
 <?php
 
 declare(strict_types=1);
+/**
+ * This file is part of Hyperf.
+ *
+ * @link     https://www.hyperf.io
+ * @document https://hyperf.wiki
+ * @contact  group@hyperf.io
+ * @license  https://github.com/hyperf/hyperf/blob/master/LICENSE
+ */
 
 namespace HyperfTest;
 
-use Hyperf\Database\Schema\Schema;
 use Hyperf\Database\Schema\Blueprint;
+use Hyperf\Database\Schema\Schema;
 
 class DatabaseHelper
 {
@@ -40,9 +48,9 @@ class DatabaseHelper
             $table->timestamps();
 
             $table->foreign('account_id')
-                  ->references('id')
-                  ->on('account')
-                  ->onDelete('set null');
+                ->references('id')
+                ->on('account')
+                ->onDelete('set null');
         });
 
         Schema::create('account_withdraw', function (Blueprint $table) {

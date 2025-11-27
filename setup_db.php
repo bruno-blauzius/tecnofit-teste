@@ -1,5 +1,14 @@
 <?php
 
+declare(strict_types=1);
+/**
+ * This file is part of Hyperf.
+ *
+ * @link     https://www.hyperf.io
+ * @document https://hyperf.wiki
+ * @contact  group@hyperf.io
+ * @license  https://github.com/hyperf/hyperf/blob/master/LICENSE
+ */
 ini_set('display_errors', 'on');
 ini_set('display_startup_errors', 'on');
 error_reporting(E_ALL);
@@ -26,8 +35,8 @@ $schema = file_get_contents(BASE_PATH . '/test/schema.sql');
 $statements = array_filter(array_map('trim', explode(';', $schema)));
 
 foreach ($statements as $i => $statement) {
-    if (!empty($statement)) {
-        echo "Executing statement " . ($i + 1) . "...\n";
+    if (! empty($statement)) {
+        echo 'Executing statement ' . ($i + 1) . "...\n";
         Db::statement($statement);
     }
 }

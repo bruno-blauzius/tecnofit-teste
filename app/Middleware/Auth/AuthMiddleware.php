@@ -1,18 +1,29 @@
 <?php
 
 declare(strict_types=1);
+/**
+ * This file is part of Hyperf.
+ *
+ * @link     https://www.hyperf.io
+ * @document https://hyperf.wiki
+ * @contact  group@hyperf.io
+ * @license  https://github.com/hyperf/hyperf/blob/master/LICENSE
+ */
 
 namespace App\Middleware\Auth;
 
 use Firebase\JWT\JWT;
 use Firebase\JWT\Key;
+use Hyperf\HttpMessage\Server\Response as HttpResponse;
+use Hyperf\HttpMessage\Stream\SwooleStream;
 use Psr\Container\ContainerInterface;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
 use Psr\Http\Server\MiddlewareInterface;
 use Psr\Http\Server\RequestHandlerInterface;
-use Hyperf\HttpMessage\Server\Response as HttpResponse; // ou equivalente da sua lib de resposta
+use Throwable;
 
+ // ou equivalente da sua lib de resposta
 
 class AuthMiddleware implements MiddlewareInterface
 {
@@ -40,12 +51,11 @@ class AuthMiddleware implements MiddlewareInterface
         try {
             $decoded = JWT::decode($token, new Key($secret, $alg));
             $request = $request->withAttribute('user', $decoded);
-        } catch (\Throwable $e) {
+        } catch (Throwable $e) {
             return $this->unauthorized($e->getMessage());
         }
         return $handler->handle($request);
     }
-
 
     protected function unauthorized(string $message): ResponseInterface
     {
@@ -53,7 +63,7 @@ class AuthMiddleware implements MiddlewareInterface
         return $response
             ->withStatus(401)
             ->withAddedHeader('Content-Type', 'application/json')
-            ->withBody(new \Hyperf\HttpMessage\Stream\SwooleStream(
+            ->withBody(new SwooleStream(
                 json_encode(['message' => $message], JSON_UNESCAPED_UNICODE)
             ));
     }

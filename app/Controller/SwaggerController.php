@@ -1,6 +1,14 @@
 <?php
 
 declare(strict_types=1);
+/**
+ * This file is part of Hyperf.
+ *
+ * @link     https://www.hyperf.io
+ * @document https://hyperf.wiki
+ * @contact  group@hyperf.io
+ * @license  https://github.com/hyperf/hyperf/blob/master/LICENSE
+ */
 
 namespace App\Controller;
 
@@ -43,7 +51,7 @@ use OpenApi\Attributes as OA;
             type: 'object',
             example: [
                 'email' => ['O campo e-mail é obrigatório.'],
-                'password' => ['O campo senha deve ter no mínimo 6 caracteres.']
+                'password' => ['O campo senha deve ter no mínimo 6 caracteres.'],
             ]
         ),
     ]

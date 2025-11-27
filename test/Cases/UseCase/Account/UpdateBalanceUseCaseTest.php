@@ -1,16 +1,30 @@
 <?php
 
 declare(strict_types=1);
+/**
+ * This file is part of Hyperf.
+ *
+ * @link     https://www.hyperf.io
+ * @document https://hyperf.wiki
+ * @contact  group@hyperf.io
+ * @license  https://github.com/hyperf/hyperf/blob/master/LICENSE
+ */
 
 namespace HyperfTest\Cases\UseCase\Account;
 
+use App\Exception\BusinessException;
 use App\Model\Account;
+use App\Model\AccountTransactionHistory;
 use App\UseCase\Account\UpdateBalanceRequest;
 use App\UseCase\Account\UpdateBalanceUseCase;
-use App\Exception\BusinessException;
-use PHPUnit\Framework\TestCase;
+use Hyperf\Database\Schema\Schema;
 use Hyperf\DbConnection\Db;
+use PHPUnit\Framework\TestCase;
 
+/**
+ * @internal
+ * @coversNothing
+ */
 class UpdateBalanceUseCaseTest extends TestCase
 {
     private UpdateBalanceUseCase $useCase;
@@ -18,10 +32,10 @@ class UpdateBalanceUseCaseTest extends TestCase
     protected function setUp(): void
     {
         parent::setUp();
-        if (\Hyperf\Database\Schema\Schema::hasTable('account')) {
+        if (Schema::hasTable('account')) {
             Db::table('account')->delete();
         }
-        $this->useCase = new UpdateBalanceUseCase(new Account(), new \App\Model\AccountTransactionHistory());
+        $this->useCase = new UpdateBalanceUseCase(new Account(), new AccountTransactionHistory());
     }
 
     public function testExecuteUpdatesBalanceSuccessfully()
@@ -41,7 +55,7 @@ class UpdateBalanceUseCaseTest extends TestCase
 
         $this->assertIsArray($result);
         $this->assertSame($account->id, $result['id']);
-        $this->assertEquals(1500.50, (float)$result['balance']);
+        $this->assertEquals(1500.50, (float) $result['balance']);
 
         $this->assertDatabaseHas('account', [
             'id' => $account->id,
@@ -63,7 +77,7 @@ class UpdateBalanceUseCaseTest extends TestCase
 
         $result = $this->useCase->execute($request);
 
-        $this->assertEquals(0.0, (float)$result['balance']);
+        $this->assertEquals(0.0, (float) $result['balance']);
     }
 
     public function testExecuteThrowsExceptionWhenAccountNotFound()

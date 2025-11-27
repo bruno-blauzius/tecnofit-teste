@@ -1,26 +1,37 @@
 <?php
 
 declare(strict_types=1);
+/**
+ * This file is part of Hyperf.
+ *
+ * @link     https://www.hyperf.io
+ * @document https://hyperf.wiki
+ * @contact  group@hyperf.io
+ * @license  https://github.com/hyperf/hyperf/blob/master/LICENSE
+ */
 
 namespace HyperfTest\Cases\UseCase\Schedule;
 
 use App\Model\Account;
-use App\Model\User;
-use App\Model\AccountWithdraw;
 use App\Model\AccountTransactionHistory;
-use App\UseCase\Schedule\ScheduleUseCase;
+use App\Model\AccountWithdraw;
+use App\Model\User;
 use App\UseCase\Schedule\ProcessScheduledWithdrawUseCase;
-use HyperfTest\HttpTestCase;
-use Hyperf\DbConnection\Db;
+use App\UseCase\Schedule\ScheduleUseCase;
 use DateTimeImmutable;
+use Hyperf\DbConnection\Db;
+use HyperfTest\HttpTestCase;
 
 /**
  * Testes funcionais sem coroutines
- * Testa a lógica de negócio e validações
+ * Testa a lógica de negócio e validações.
+ * @internal
+ * @coversNothing
  */
 class ScheduleUseCaseFunctionalTest extends HttpTestCase
 {
     private ScheduleUseCase $useCase;
+
     private ProcessScheduledWithdrawUseCase $processWithdrawUseCase;
 
     protected function setUp(): void
@@ -34,30 +45,6 @@ class ScheduleUseCaseFunctionalTest extends HttpTestCase
     {
         $this->cleanDatabase();
         parent::tearDown();
-    }
-
-    private function cleanDatabase(): void
-    {
-        Db::statement('SET FOREIGN_KEY_CHECKS=0;');
-        Db::table('account_withdraw')->truncate();
-        Db::table('account_transaction_history')->truncate();
-        Db::table('account')->truncate();
-        Db::table('users')->truncate();
-        Db::statement('SET FOREIGN_KEY_CHECKS=1;');
-    }
-
-    private function initializeUseCases(): void
-    {
-        $this->processWithdrawUseCase = new ProcessScheduledWithdrawUseCase(
-            new Account(),
-            new AccountTransactionHistory()
-        );
-
-        $this->useCase = new ScheduleUseCase(
-            new AccountWithdraw(),
-            new Account(),
-            $this->processWithdrawUseCase
-        );
     }
 
     public function testReturnsEmptyResultWhenNoScheduledWithdraws()
@@ -226,6 +213,30 @@ class ScheduleUseCaseFunctionalTest extends HttpTestCase
         $this->assertIsInt($result['processed']);
         $this->assertIsInt($result['errors']);
         $this->assertIsArray($result['results']);
+    }
+
+    private function cleanDatabase(): void
+    {
+        Db::statement('SET FOREIGN_KEY_CHECKS=0;');
+        Db::table('account_withdraw')->truncate();
+        Db::table('account_transaction_history')->truncate();
+        Db::table('account')->truncate();
+        Db::table('users')->truncate();
+        Db::statement('SET FOREIGN_KEY_CHECKS=1;');
+    }
+
+    private function initializeUseCases(): void
+    {
+        $this->processWithdrawUseCase = new ProcessScheduledWithdrawUseCase(
+            new Account(),
+            new AccountTransactionHistory()
+        );
+
+        $this->useCase = new ScheduleUseCase(
+            new AccountWithdraw(),
+            new Account(),
+            $this->processWithdrawUseCase
+        );
     }
 
     private function createTestUser(): User

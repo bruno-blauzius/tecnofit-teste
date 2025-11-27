@@ -1,6 +1,14 @@
 <?php
 
 declare(strict_types=1);
+/**
+ * This file is part of Hyperf.
+ *
+ * @link     https://www.hyperf.io
+ * @document https://hyperf.wiki
+ * @contact  group@hyperf.io
+ * @license  https://github.com/hyperf/hyperf/blob/master/LICENSE
+ */
 
 namespace App\Crontab;
 
@@ -9,8 +17,10 @@ use Hyperf\Di\Annotation\Inject;
 use Hyperf\Logger\LoggerFactory;
 use Hyperf\Metric\Contract\CounterInterface;
 use Hyperf\Metric\Contract\GaugeInterface;
+use Hyperf\Metric\Contract\MetricFactoryInterface;
 use Psr\Container\ContainerInterface;
 use Psr\Log\LoggerInterface;
+use Throwable;
 
 class ProcessScheduledWithdrawsCrontab
 {
@@ -18,8 +28,11 @@ class ProcessScheduledWithdrawsCrontab
     protected ScheduleUseCase $scheduleUseCase;
 
     protected LoggerInterface $logger;
+
     private CounterInterface $crontabExecutions;
+
     private CounterInterface $scheduledWithdrawsProcessed;
+
     private GaugeInterface $crontabLastExecutionTimestamp;
 
     public function __construct(
@@ -28,7 +41,7 @@ class ProcessScheduledWithdrawsCrontab
     ) {
         $this->logger = $loggerFactory->get('crontab');
 
-        $factory = $container->get(\Hyperf\Metric\Contract\MetricFactoryInterface::class);
+        $factory = $container->get(MetricFactoryInterface::class);
 
         $this->crontabExecutions = $factory->makeCounter(
             'crontab_executions_total',
@@ -77,7 +90,7 @@ class ProcessScheduledWithdrawsCrontab
             if ($failedCount > 0) {
                 $this->logger->warning('[CRONTAB] Saques que falharam: ' . $failedCount);
             }
-        } catch (\Throwable $e) {
+        } catch (Throwable $e) {
             $this->crontabExecutions->with('error')->add(1);
 
             $this->logger->error(

@@ -1,24 +1,39 @@
 <?php
 
 declare(strict_types=1);
+/**
+ * This file is part of Hyperf.
+ *
+ * @link     https://www.hyperf.io
+ * @document https://hyperf.wiki
+ * @contact  group@hyperf.io
+ * @license  https://github.com/hyperf/hyperf/blob/master/LICENSE
+ */
 
 namespace HyperfTest\Cases\UseCase\Account;
 
 use App\Model\Account;
+use App\Model\AccountTransactionHistory;
 use App\Model\AccountWithdraw;
 use App\Model\AccountWithdrawPix;
-use App\Model\AccountTransactionHistory;
 use App\Model\PixKey;
-use App\UseCase\Account\WithdrawRequest;
-use App\UseCase\Account\WithdrawUseCase;
 use App\UseCase\Account\Exception\AccountNotFoundException;
 use App\UseCase\Account\Exception\InsufficientBalanceException;
 use App\UseCase\Account\Exception\InvalidScheduleException;
 use App\UseCase\Account\Exception\PixKeyNotFoundException;
+use App\UseCase\Account\WithdrawRequest;
+use App\UseCase\Account\WithdrawUseCase;
 use DateTimeImmutable;
-use PHPUnit\Framework\TestCase;
+use Hyperf\Context\ApplicationContext;
+use Hyperf\Database\Schema\Schema;
 use Hyperf\DbConnection\Db;
+use PHPUnit\Framework\TestCase;
+use Throwable;
 
+/**
+ * @internal
+ * @coversNothing
+ */
 class WithdrawUseCaseTest extends TestCase
 {
     private WithdrawUseCase $useCase;
@@ -27,21 +42,21 @@ class WithdrawUseCaseTest extends TestCase
     {
         parent::setUp();
         Db::statement('SET FOREIGN_KEY_CHECKS=0');
-        if (\Hyperf\Database\Schema\Schema::hasTable('pix_keys')) {
+        if (Schema::hasTable('pix_keys')) {
             Db::table('pix_keys')->delete();
         }
-        if (\Hyperf\Database\Schema\Schema::hasTable('account_withdraw_pix')) {
+        if (Schema::hasTable('account_withdraw_pix')) {
             Db::table('account_withdraw_pix')->delete();
         }
-        if (\Hyperf\Database\Schema\Schema::hasTable('account_withdraw')) {
+        if (Schema::hasTable('account_withdraw')) {
             Db::table('account_withdraw')->delete();
         }
-        if (\Hyperf\Database\Schema\Schema::hasTable('account')) {
+        if (Schema::hasTable('account')) {
             Db::table('account')->delete();
         }
         Db::statement('SET FOREIGN_KEY_CHECKS=1');
 
-        $container = \Hyperf\Context\ApplicationContext::getContainer();
+        $container = ApplicationContext::getContainer();
         $this->useCase = new WithdrawUseCase(
             new Account(),
             new AccountWithdraw(),
@@ -348,7 +363,7 @@ class WithdrawUseCaseTest extends TestCase
             );
 
             $this->useCase->execute($request);
-        } catch (\Throwable $e) {
+        } catch (Throwable $e) {
             $account->refresh();
             $this->assertSame((string) $initialBalance, (string) $account->balance);
         }

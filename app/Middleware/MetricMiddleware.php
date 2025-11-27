@@ -1,25 +1,36 @@
 <?php
 
 declare(strict_types=1);
+/**
+ * This file is part of Hyperf.
+ *
+ * @link     https://www.hyperf.io
+ * @document https://hyperf.wiki
+ * @contact  group@hyperf.io
+ * @license  https://github.com/hyperf/hyperf/blob/master/LICENSE
+ */
 
 namespace App\Middleware;
 
 use Hyperf\Metric\Contract\CounterInterface;
 use Hyperf\Metric\Contract\HistogramInterface;
+use Hyperf\Metric\Contract\MetricFactoryInterface;
 use Psr\Container\ContainerInterface;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
 use Psr\Http\Server\MiddlewareInterface;
 use Psr\Http\Server\RequestHandlerInterface;
+use Throwable;
 
 class MetricMiddleware implements MiddlewareInterface
 {
     private CounterInterface $httpRequestsTotal;
+
     private HistogramInterface $httpRequestDuration;
 
     public function __construct(ContainerInterface $container)
     {
-        $factory = $container->get(\Hyperf\Metric\Contract\MetricFactoryInterface::class);
+        $factory = $container->get(MetricFactoryInterface::class);
 
         $this->httpRequestsTotal = $factory->makeCounter(
             'http_requests_total',
@@ -48,7 +59,7 @@ class MetricMiddleware implements MiddlewareInterface
                 ->add(1);
 
             return $response;
-        } catch (\Throwable $e) {
+        } catch (Throwable $e) {
             $this->httpRequestsTotal
                 ->with($method, $path, '500')
                 ->add(1);

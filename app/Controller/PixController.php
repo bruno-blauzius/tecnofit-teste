@@ -1,6 +1,14 @@
 <?php
 
 declare(strict_types=1);
+/**
+ * This file is part of Hyperf.
+ *
+ * @link     https://www.hyperf.io
+ * @document https://hyperf.wiki
+ * @contact  group@hyperf.io
+ * @license  https://github.com/hyperf/hyperf/blob/master/LICENSE
+ */
 
 namespace App\Controller;
 
@@ -42,7 +50,7 @@ class PixController
                     description: 'Valor da chave PIX',
                     type: 'string',
                     example: 'teste@example.com'
-                )
+                ),
             ]
         )
     )]
@@ -61,10 +69,10 @@ class PixController
                         new SA\Property(property: 'key_type', type: 'string', example: 'email'),
                         new SA\Property(property: 'key_value', type: 'string', example: 'teste@example.com'),
                         new SA\Property(property: 'status', type: 'string', example: 'active'),
-                        new SA\Property(property: 'created_at', type: 'string', example: '2024-01-15 10:30:00')
+                        new SA\Property(property: 'created_at', type: 'string', example: '2024-01-15 10:30:00'),
                     ],
                     type: 'object'
-                )
+                ),
             ]
         )
     )]
@@ -79,16 +87,15 @@ class PixController
                     property: 'errors',
                     properties: [
                         new SA\Property(property: 'type', type: 'array', items: new SA\Items(type: 'string')),
-                        new SA\Property(property: 'key', type: 'array', items: new SA\Items(type: 'string'))
+                        new SA\Property(property: 'key', type: 'array', items: new SA\Items(type: 'string')),
                     ],
                     type: 'object'
-                )
+                ),
             ]
         )
     )]
     public function store(PixStoreRequest $request, ResponseInterface $response, string $accountId)
     {
-
         $data = $request->all();
 
         $result = PixKey::create([

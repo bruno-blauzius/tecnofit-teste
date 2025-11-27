@@ -1,30 +1,41 @@
 <?php
 
 declare(strict_types=1);
+/**
+ * This file is part of Hyperf.
+ *
+ * @link     https://www.hyperf.io
+ * @document https://hyperf.wiki
+ * @contact  group@hyperf.io
+ * @license  https://github.com/hyperf/hyperf/blob/master/LICENSE
+ */
 
 namespace HyperfTest\Cases\UseCase\Schedule;
 
 use App\Model\Account;
-use App\Model\User;
-use App\Model\AccountWithdraw;
 use App\Model\AccountTransactionHistory;
-use App\UseCase\Schedule\ScheduleUseCase;
+use App\Model\AccountWithdraw;
+use App\Model\User;
 use App\UseCase\Schedule\ProcessScheduledWithdrawUseCase;
-use PHPUnit\Framework\TestCase;
-use Hyperf\DbConnection\Db;
+use App\UseCase\Schedule\ScheduleUseCase;
 use DateTimeImmutable;
+use Hyperf\DbConnection\Db;
+use PHPUnit\Framework\TestCase;
 use Swoole\Coroutine;
 
 /**
  * Testes de processamento paralelo com coroutines
- * Testa o comportamento das coroutines no processamento
+ * Testa o comportamento das coroutines no processamento.
  *
  * IMPORTANTE: Estes testes devem rodar fora do ambiente co-phpunit
  * Execute com: php vendor/bin/phpunit test/Cases/UseCase/Schedule/ScheduleUseCaseCoroutineTest.php
+ * @internal
+ * @coversNothing
  */
 class ScheduleUseCaseCoroutineTest extends TestCase
 {
     private ScheduleUseCase $useCase;
+
     private ProcessScheduledWithdrawUseCase $processWithdrawUseCase;
 
     protected function setUp(): void
@@ -44,30 +55,6 @@ class ScheduleUseCaseCoroutineTest extends TestCase
     {
         $this->cleanDatabase();
         parent::tearDown();
-    }
-
-    private function cleanDatabase(): void
-    {
-        Db::statement('SET FOREIGN_KEY_CHECKS=0;');
-        Db::table('account_withdraw')->truncate();
-        Db::table('account_transaction_history')->truncate();
-        Db::table('account')->truncate();
-        Db::table('users')->truncate();
-        Db::statement('SET FOREIGN_KEY_CHECKS=1;');
-    }
-
-    private function initializeUseCases(): void
-    {
-        $this->processWithdrawUseCase = new ProcessScheduledWithdrawUseCase(
-            new Account(),
-            new AccountTransactionHistory()
-        );
-
-        $this->useCase = new ScheduleUseCase(
-            new AccountWithdraw(),
-            new Account(),
-            $this->processWithdrawUseCase
-        );
     }
 
     public function testProcessesSingleWithdrawWithCoroutine()
@@ -110,7 +97,7 @@ class ScheduleUseCaseCoroutineTest extends TestCase
 
         // Criar 5 saques agendados
         $withdrawIds = [];
-        for ($i = 0; $i < 5; $i++) {
+        for ($i = 0; $i < 5; ++$i) {
             $withdraw = AccountWithdraw::create([
                 'account_id' => $account->id,
                 'amount' => 100.00,
@@ -152,7 +139,7 @@ class ScheduleUseCaseCoroutineTest extends TestCase
         $pastTime = (new DateTimeImmutable('now'))->modify('-1 hour');
 
         // Criar 15 saques (mais que o limite de 10 paralelos)
-        for ($i = 0; $i < 15; $i++) {
+        for ($i = 0; $i < 15; ++$i) {
             AccountWithdraw::create([
                 'account_id' => $account->id,
                 'amount' => 100.00,
@@ -187,7 +174,7 @@ class ScheduleUseCaseCoroutineTest extends TestCase
         $pastTime = (new DateTimeImmutable('now'))->modify('-1 hour');
 
         // 3 saques com saldo suficiente
-        for ($i = 0; $i < 3; $i++) {
+        for ($i = 0; $i < 3; ++$i) {
             AccountWithdraw::create([
                 'account_id' => $accountWithBalance->id,
                 'amount' => 100.00,
@@ -200,7 +187,7 @@ class ScheduleUseCaseCoroutineTest extends TestCase
         }
 
         // 2 saques sem saldo suficiente
-        for ($i = 0; $i < 2; $i++) {
+        for ($i = 0; $i < 2; ++$i) {
             AccountWithdraw::create([
                 'account_id' => $accountWithoutBalance->id,
                 'amount' => 100.00,
@@ -232,7 +219,7 @@ class ScheduleUseCaseCoroutineTest extends TestCase
         $pastTime = (new DateTimeImmutable('now'))->modify('-1 hour');
 
         // Criar 10 saques
-        for ($i = 0; $i < 10; $i++) {
+        for ($i = 0; $i < 10; ++$i) {
             AccountWithdraw::create([
                 'account_id' => $account->id,
                 'amount' => 100.00,
@@ -260,6 +247,30 @@ class ScheduleUseCaseCoroutineTest extends TestCase
         // Verificar que o tempo de execução é razoável
         // Com processamento paralelo, deve ser menor que processar sequencialmente
         $this->assertLessThan(5.0, $executionTime, 'Processamento deve ser rápido com coroutines');
+    }
+
+    private function cleanDatabase(): void
+    {
+        Db::statement('SET FOREIGN_KEY_CHECKS=0;');
+        Db::table('account_withdraw')->truncate();
+        Db::table('account_transaction_history')->truncate();
+        Db::table('account')->truncate();
+        Db::table('users')->truncate();
+        Db::statement('SET FOREIGN_KEY_CHECKS=1;');
+    }
+
+    private function initializeUseCases(): void
+    {
+        $this->processWithdrawUseCase = new ProcessScheduledWithdrawUseCase(
+            new Account(),
+            new AccountTransactionHistory()
+        );
+
+        $this->useCase = new ScheduleUseCase(
+            new AccountWithdraw(),
+            new Account(),
+            $this->processWithdrawUseCase
+        );
     }
 
     private function createTestUser(): User

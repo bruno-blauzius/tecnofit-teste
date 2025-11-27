@@ -1,27 +1,36 @@
 <?php
 
 declare(strict_types=1);
+/**
+ * This file is part of Hyperf.
+ *
+ * @link     https://www.hyperf.io
+ * @document https://hyperf.wiki
+ * @contact  group@hyperf.io
+ * @license  https://github.com/hyperf/hyperf/blob/master/LICENSE
+ */
 
 namespace App\UseCase\Account;
 
+use App\Constants\ErrorCode;
+use App\Exception\BusinessException;
+use App\Helper\EmailHelper;
 use App\Model\Account;
 use App\Model\AccountTransactionHistory;
-use App\Helper\EmailHelper;
-use App\Exception\BusinessException;
-use App\Constants\ErrorCode;
 
 class UpdateBalanceUseCase
 {
     public function __construct(
         private Account $account,
         private AccountTransactionHistory $transactionHistoryModel
-    ) {}
+    ) {
+    }
 
     public function execute(UpdateBalanceRequest $request): array
     {
         $account = $this->account->with('user')->find($request->accountId);
 
-        if (!$account) {
+        if (! $account) {
             throw new BusinessException(
                 ErrorCode::ACCOUNT_NOT_FOUND,
                 'Conta não encontrada.'
@@ -74,7 +83,7 @@ class UpdateBalanceUseCase
     }
 
     /**
-     * Registra uma transação no histórico
+     * Registra uma transação no histórico.
      */
     private function recordTransaction(
         string $accountId,

@@ -1,18 +1,27 @@
 <?php
 
 declare(strict_types=1);
+/**
+ * This file is part of Hyperf.
+ *
+ * @link     https://www.hyperf.io
+ * @document https://hyperf.wiki
+ * @contact  group@hyperf.io
+ * @license  https://github.com/hyperf/hyperf/blob/master/LICENSE
+ */
 
 namespace App\UseCase\Account;
 
+use App\Helper\EmailHelper;
 use App\Model\Account;
 use App\Model\AccountTransactionHistory;
-use App\Helper\EmailHelper;
 
 class CreateAccountUseCase
 {
     public function __construct(
         private AccountTransactionHistory $transactionHistoryModel
-    ) {}
+    ) {
+    }
 
     public function execute(CreateAccountRequest $request): array
     {
@@ -57,7 +66,7 @@ class CreateAccountUseCase
     }
 
     /**
-     * Registra uma transação no histórico
+     * Registra uma transação no histórico.
      */
     private function recordTransaction(
         string $accountId,
@@ -85,7 +94,7 @@ class CreateAccountUseCase
     }
 
     /**
-     * Obtém o email do usuário associado à conta
+     * Obtém o email do usuário associado à conta.
      */
     private function getUserEmail(Account $account): string
     {

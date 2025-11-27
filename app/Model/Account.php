@@ -1,11 +1,19 @@
 <?php
 
 declare(strict_types=1);
+/**
+ * This file is part of Hyperf.
+ *
+ * @link     https://www.hyperf.io
+ * @document https://hyperf.wiki
+ * @contact  group@hyperf.io
+ * @license  https://github.com/hyperf/hyperf/blob/master/LICENSE
+ */
 
 namespace App\Model;
 
-use Hyperf\DbConnection\Model\Model;
 use Hyperf\Database\Model\Events\Creating;
+use Hyperf\DbConnection\Model\Model;
 use Ramsey\Uuid\Uuid;
 
 /**
@@ -15,13 +23,13 @@ use Ramsey\Uuid\Uuid;
  */
 class Account extends Model
 {
+    public bool $incrementing = false;
+
     protected ?string $table = 'account';
 
     protected string $primaryKey = 'id';
 
     protected string $keyType = 'string';
-
-    public bool $incrementing = false;
 
     protected array $fillable = [
         'id',
@@ -36,7 +44,7 @@ class Account extends Model
     public function creating(Creating $event)
     {
         $model = $event->getModel();
-        if (!isset($model->id) || empty($model->id)) {
+        if (! isset($model->id) || empty($model->id)) {
             $model->id = Uuid::uuid4()->toString();
         }
     }
@@ -47,7 +55,7 @@ class Account extends Model
     }
 
     /**
-     * Relacionamento 1:1 com User
+     * Relacionamento 1:1 com User.
      */
     public function user()
     {

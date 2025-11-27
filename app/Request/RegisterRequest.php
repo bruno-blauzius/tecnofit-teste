@@ -1,15 +1,22 @@
 <?php
 
 declare(strict_types=1);
+/**
+ * This file is part of Hyperf.
+ *
+ * @link     https://www.hyperf.io
+ * @document https://hyperf.wiki
+ * @contact  group@hyperf.io
+ * @license  https://github.com/hyperf/hyperf/blob/master/LICENSE
+ */
 
 namespace App\Request;
 
-use Hyperf\Validation\Request\FormRequest;
 use Hyperf\Contract\ValidatorInterface;
 use Hyperf\HttpMessage\Server\Response as HttpResponse;
-use Hyperf\Validation\ValidationException;
 use Hyperf\HttpMessage\Stream\SwooleStream;
-
+use Hyperf\Validation\Request\FormRequest;
+use Hyperf\Validation\ValidationException;
 
 class RegisterRequest extends FormRequest
 {
@@ -37,7 +44,7 @@ class RegisterRequest extends FormRequest
     public function attributes(): array
     {
         return [
-            'name'  => 'Nome',
+            'name' => 'Nome',
             'email' => 'E-mail',
             'password' => 'Senha',
             'confirm_password' => 'Confirmação de Senha',
@@ -70,7 +77,7 @@ class RegisterRequest extends FormRequest
         $response = $this->container->get(HttpResponse::class);
         $payload = [
             'message' => 'Os dados enviados são inválidos.',
-            'errors'  => $validator->errors()->messages(),
+            'errors' => $validator->errors()->messages(),
         ];
 
         throw new ValidationException(

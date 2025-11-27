@@ -1,29 +1,37 @@
 <?php
 
 declare(strict_types=1);
+/**
+ * This file is part of Hyperf.
+ *
+ * @link     https://www.hyperf.io
+ * @document https://hyperf.wiki
+ * @contact  group@hyperf.io
+ * @license  https://github.com/hyperf/hyperf/blob/master/LICENSE
+ */
 
 namespace App\Controller;
 
-use App\Model\Account;
 use App\Helper\JsonResponse;
+use App\Model\Account;
 use App\Request\AccountPostWithDrawRequest;
+use App\Request\AccountStoreRequest;
+use App\Request\AccountUpdateRequest;
 use App\UseCase\Account\CreateAccountRequest;
 use App\UseCase\Account\CreateAccountUseCase;
-use App\UseCase\Account\WithdrawRequest as WithdrawDto;
-use App\UseCase\Account\WithdrawUseCase;
 use App\UseCase\Account\Exception\AccountNotFoundException;
 use App\UseCase\Account\Exception\InsufficientBalanceException;
 use App\UseCase\Account\Exception\InvalidScheduleException;
 use App\UseCase\Account\Exception\PixKeyNotFoundException;
 use App\UseCase\Account\UpdateBalanceRequest;
 use App\UseCase\Account\UpdateBalanceUseCase;
+use App\UseCase\Account\WithdrawRequest as WithdrawDto;
+use App\UseCase\Account\WithdrawUseCase;
 use DateTimeImmutable;
 use Hyperf\HttpServer\Contract\RequestInterface;
 use Hyperf\HttpServer\Contract\ResponseInterface;
-use App\Request\AccountStoreRequest;
-use App\Request\AccountUpdateRequest;
 use OpenApi\Attributes as OA;
-
+use Throwable;
 
 class AccountController extends AbstractController
 {
@@ -31,8 +39,8 @@ class AccountController extends AbstractController
         protected CreateAccountUseCase $createAccountUseCase,
         protected WithdrawUseCase $withdrawUseCase,
         protected UpdateBalanceUseCase $updateBalanceUseCase,
-    ) {}
-
+    ) {
+    }
 
     #[OA\Post(
         path: '/api/v1/accounts',
@@ -87,7 +95,6 @@ class AccountController extends AbstractController
 
         return JsonResponse::success($response, $result, 201);
     }
-
 
     #[OA\Put(
         path: '/api/v1/{accountId}',
@@ -160,7 +167,6 @@ class AccountController extends AbstractController
         return JsonResponse::success($response, $result, 201);
     }
 
-
     #[OA\Get(
         path: '/api/v1/accounts',
         summary: 'Listar todas as contas',
@@ -195,7 +201,6 @@ class AccountController extends AbstractController
         $accounts = Account::all()->toArray();
         return JsonResponse::success($response, $accounts);
     }
-
 
     #[OA\Post(
         path: '/api/v1/accounts/{accountId}/balance/withdraw',
@@ -279,7 +284,7 @@ class AccountController extends AbstractController
         $validated = $request->validated();
 
         $scheduleAt = null;
-        if (!empty($validated['schedule'])) {
+        if (! empty($validated['schedule'])) {
             $scheduleAt = DateTimeImmutable::createFromFormat('Y-m-d H:i', $validated['schedule']) ?: null;
         }
 
@@ -293,7 +298,6 @@ class AccountController extends AbstractController
         );
 
         try {
-
             $result = $this->withdrawUseCase->execute(
                 $dto
             );
@@ -303,15 +307,13 @@ class AccountController extends AbstractController
                 : 'Saque realizado com sucesso.';
 
             return JsonResponse::success($response, $result, 201, $message);
-
         } catch (AccountNotFoundException $e) {
             return JsonResponse::error($response, $e->getMessage(), 404);
         } catch (InsufficientBalanceException|InvalidScheduleException|PixKeyNotFoundException $e) {
             return JsonResponse::error($response, $e->getMessage(), 422);
-        } catch (\Throwable $e) {
+        } catch (Throwable $e) {
             var_dump($e->getMessage());
             return JsonResponse::error($response, 'Erro interno ao processar o saque.', 500);
         }
     }
-
 }

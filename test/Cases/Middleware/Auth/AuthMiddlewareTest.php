@@ -1,6 +1,14 @@
 <?php
 
 declare(strict_types=1);
+/**
+ * This file is part of Hyperf.
+ *
+ * @link     https://www.hyperf.io
+ * @document https://hyperf.wiki
+ * @contact  group@hyperf.io
+ * @license  https://github.com/hyperf/hyperf/blob/master/LICENSE
+ */
 
 namespace HyperfTest\Cases\Middleware\Auth;
 
@@ -8,15 +16,21 @@ use App\Middleware\Auth\AuthMiddleware;
 use Firebase\JWT\JWT;
 use Hyperf\HttpMessage\Server\Request;
 use Hyperf\HttpMessage\Server\Response;
-use Hyperf\HttpServer\Contract\RequestInterface;
+use Mockery;
 use PHPUnit\Framework\TestCase;
+use Psr\Container\ContainerInterface;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
 use Psr\Http\Server\RequestHandlerInterface;
 
+/**
+ * @internal
+ * @coversNothing
+ */
 class AuthMiddlewareTest extends TestCase
 {
     private string $jwtSecret = 'test-secret-key';
+
     private $container;
 
     protected function setUp(): void
@@ -25,9 +39,9 @@ class AuthMiddlewareTest extends TestCase
         putenv("JWT_SECRET={$this->jwtSecret}");
 
         $response = new Response();
-        $this->container = \Mockery::mock(\Psr\Container\ContainerInterface::class);
+        $this->container = Mockery::mock(ContainerInterface::class);
         $this->container->shouldReceive('get')
-            ->with(\Hyperf\HttpMessage\Server\Response::class)
+            ->with(Response::class)
             ->andReturn($response);
     }
 
@@ -42,11 +56,11 @@ class AuthMiddlewareTest extends TestCase
         $token = $this->generateValidToken();
 
         $request = $this->createMockRequest([
-            'Authorization' => "Bearer {$token}"
+            'Authorization' => "Bearer {$token}",
         ]);
 
         $handler = $this->createMockHandler();
-        $container = \Mockery::mock(\Psr\Container\ContainerInterface::class);
+        $container = Mockery::mock(ContainerInterface::class);
         $middleware = new AuthMiddleware($container);
 
         $response = $middleware->process($request, $handler);
@@ -70,7 +84,7 @@ class AuthMiddlewareTest extends TestCase
     public function testProcessReturns401WhenInvalidTokenFormat()
     {
         $request = $this->createMockRequest([
-            'Authorization' => 'InvalidFormat'
+            'Authorization' => 'InvalidFormat',
         ]);
 
         $handler = $this->createMockHandler();
@@ -86,7 +100,7 @@ class AuthMiddlewareTest extends TestCase
         $expiredToken = $this->generateExpiredToken();
 
         $request = $this->createMockRequest([
-            'Authorization' => "Bearer {$expiredToken}"
+            'Authorization' => "Bearer {$expiredToken}",
         ]);
 
         $handler = $this->createMockHandler();
@@ -102,7 +116,7 @@ class AuthMiddlewareTest extends TestCase
         $invalidToken = $this->generateTokenWithWrongSecret();
 
         $request = $this->createMockRequest([
-            'Authorization' => "Bearer {$invalidToken}"
+            'Authorization' => "Bearer {$invalidToken}",
         ]);
 
         $handler = $this->createMockHandler();
@@ -118,7 +132,7 @@ class AuthMiddlewareTest extends TestCase
         $token = $this->generateValidToken();
 
         $request = $this->createMockRequest([
-            'Authorization' => "bearer {$token}"
+            'Authorization' => "bearer {$token}",
         ]);
 
         $handler = $this->createMockHandler();

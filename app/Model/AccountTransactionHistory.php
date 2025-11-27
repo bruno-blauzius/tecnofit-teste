@@ -1,11 +1,20 @@
 <?php
 
 declare(strict_types=1);
+/**
+ * This file is part of Hyperf.
+ *
+ * @link     https://www.hyperf.io
+ * @document https://hyperf.wiki
+ * @contact  group@hyperf.io
+ * @license  https://github.com/hyperf/hyperf/blob/master/LICENSE
+ */
 
 namespace App\Model;
 
-use Hyperf\DbConnection\Model\Model;
+use Carbon\Carbon;
 use Hyperf\Database\Model\Events\Creating;
+use Hyperf\DbConnection\Model\Model;
 use Ramsey\Uuid\Uuid;
 
 /**
@@ -15,21 +24,21 @@ use Ramsey\Uuid\Uuid;
  * @property float $amount
  * @property float $balance_before
  * @property float $balance_after
- * @property string|null $description
- * @property string|null $reference_id
- * @property string|null $reference_type
- * @property \Carbon\Carbon $created_at
- * @property \Carbon\Carbon $updated_at
+ * @property null|string $description
+ * @property null|string $reference_id
+ * @property null|string $reference_type
+ * @property Carbon $created_at
+ * @property Carbon $updated_at
  */
 class AccountTransactionHistory extends Model
 {
+    public bool $incrementing = false;
+
     protected ?string $table = 'account_transaction_history';
 
     protected string $primaryKey = 'id';
 
     protected string $keyType = 'string';
-
-    public bool $incrementing = false;
 
     protected array $fillable = [
         'id',
@@ -54,7 +63,7 @@ class AccountTransactionHistory extends Model
     public function creating(Creating $event): void
     {
         $model = $event->getModel();
-        if (!isset($model->id) || empty($model->id)) {
+        if (! isset($model->id) || empty($model->id)) {
             $model->id = Uuid::uuid4()->toString();
         }
     }

@@ -1,13 +1,23 @@
 <?php
 
 declare(strict_types=1);
+/**
+ * This file is part of Hyperf.
+ *
+ * @link     https://www.hyperf.io
+ * @document https://hyperf.wiki
+ * @contact  group@hyperf.io
+ * @license  https://github.com/hyperf/hyperf/blob/master/LICENSE
+ */
 
 namespace App\Model;
 
+use Carbon\Carbon;
 use Hyperf\Database\Model\Events\Creating;
 use Hyperf\Database\Model\Events\Saving;
 use Hyperf\Database\Model\SoftDeletes;
 use Hyperf\DbConnection\Traits\HasContainer;
+use InvalidArgumentException;
 use Ramsey\Uuid\Uuid;
 
 /**
@@ -16,14 +26,16 @@ use Ramsey\Uuid\Uuid;
  * @property string $key_type
  * @property string $key_value
  * @property string $status
- * @property \Carbon\Carbon $created_at
- * @property \Carbon\Carbon $updated_at
- * @property \Carbon\Carbon|null $deleted_at
+ * @property Carbon $created_at
+ * @property Carbon $updated_at
+ * @property null|Carbon $deleted_at
  */
 class PixKey extends Model
 {
     use HasContainer;
     use SoftDeletes;
+
+    public bool $incrementing = false;
 
     /**
      * The table associated with the model.
@@ -33,8 +45,6 @@ class PixKey extends Model
     protected string $primaryKey = 'id';
 
     protected string $keyType = 'string';
-
-    public bool $incrementing = false;
 
     /**
      * The attributes that are mass assignable.
@@ -75,29 +85,8 @@ class PixKey extends Model
         $this->validatePixKeyFormat($model);
     }
 
-    private function shouldGenerateId($model): bool
-    {
-        return !isset($model->id) || empty($model->id);
-    }
-
-    private function validateRequiredFields($model): void
-    {
-        if (empty($model->key_type) || empty($model->key_value)) {
-            throw new \InvalidArgumentException('Tipo e valor da chave PIX são obrigatórios.');
-        }
-    }
-
-    private function validatePixKeyFormat($model): void
-    {
-        if (!self::validateKeyValue($model->key_type, $model->key_value)) {
-            throw new \InvalidArgumentException(
-                sprintf('Chave PIX inválida para o tipo "%s".', $model->key_type)
-            );
-        }
-    }
-
     /**
-     * Relacionamento com Account
+     * Relacionamento com Account.
      */
     public function account()
     {
@@ -116,11 +105,32 @@ class PixKey extends Model
         };
     }
 
+    private function shouldGenerateId($model): bool
+    {
+        return ! isset($model->id) || empty($model->id);
+    }
+
+    private function validateRequiredFields($model): void
+    {
+        if (empty($model->key_type) || empty($model->key_value)) {
+            throw new InvalidArgumentException('Tipo e valor da chave PIX são obrigatórios.');
+        }
+    }
+
+    private function validatePixKeyFormat($model): void
+    {
+        if (! self::validateKeyValue($model->key_type, $model->key_value)) {
+            throw new InvalidArgumentException(
+                sprintf('Chave PIX inválida para o tipo "%s".', $model->key_type)
+            );
+        }
+    }
+
     private static function isValidCpf(string $cpf): bool
     {
         $cleanCpf = self::extractNumbers($cpf);
 
-        if (!self::hasValidCpfLength($cleanCpf)) {
+        if (! self::hasValidCpfLength($cleanCpf)) {
             return false;
         }
 
@@ -134,12 +144,12 @@ class PixKey extends Model
 
     private static function hasValidCpfLength(string $cpf): bool
     {
-        return strlen($cpf) === 11 && !preg_match('/(\d)\1{10}/', $cpf);
+        return strlen($cpf) === 11 && ! preg_match('/(\d)\1{10}/', $cpf);
     }
 
     private static function validateCpfCheckDigits(string $cpf): bool
     {
-        for ($position = 9; $position < 11; $position++) {
+        for ($position = 9; $position < 11; ++$position) {
             $digit = self::calculateCpfCheckDigit($cpf, $position);
 
             if ($cpf[$position] != $digit) {
@@ -154,7 +164,7 @@ class PixKey extends Model
     {
         $sum = 0;
 
-        for ($index = 0; $index < $position; $index++) {
+        for ($index = 0; $index < $position; ++$index) {
             $sum += $cpf[$index] * (($position + 1) - $index);
         }
 
@@ -165,7 +175,7 @@ class PixKey extends Model
     {
         $cleanCnpj = self::extractNumbers($cnpj);
 
-        if (!self::hasValidCnpjLength($cleanCnpj)) {
+        if (! self::hasValidCnpjLength($cleanCnpj)) {
             return false;
         }
 
@@ -174,7 +184,7 @@ class PixKey extends Model
 
     private static function hasValidCnpjLength(string $cnpj): bool
     {
-        return strlen($cnpj) === 14 && !preg_match('/(\d)\1{13}/', $cnpj);
+        return strlen($cnpj) === 14 && ! preg_match('/(\d)\1{13}/', $cnpj);
     }
 
     private static function validateCnpjCheckDigits(string $cnpj): bool
@@ -194,7 +204,7 @@ class PixKey extends Model
         $sum = 0;
         $position = $length - 7;
 
-        for ($index = $length; $index >= 1; $index--) {
+        for ($index = $length; $index >= 1; --$index) {
             $sum += $numbers[$length - $index] * $position--;
 
             if ($position < 2) {

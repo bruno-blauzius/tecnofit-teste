@@ -2,8 +2,14 @@
 <?php
 
 declare(strict_types=1);
-
-// Set test environment variables BEFORE loading anything
+/**
+ * This file is part of Hyperf.
+ *
+ * @link     https://www.hyperf.io
+ * @document https://hyperf.wiki
+ * @contact  group@hyperf.io
+ * @license  https://github.com/hyperf/hyperf/blob/master/LICENSE
+ */
 putenv('DB_HOST=db-test');
 putenv('DB_PORT=3306');
 putenv('DB_DATABASE=hyperf_test');

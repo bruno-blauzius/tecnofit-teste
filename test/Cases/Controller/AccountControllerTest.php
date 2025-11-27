@@ -1,30 +1,43 @@
 <?php
 
 declare(strict_types=1);
+/**
+ * This file is part of Hyperf.
+ *
+ * @link     https://www.hyperf.io
+ * @document https://hyperf.wiki
+ * @contact  group@hyperf.io
+ * @license  https://github.com/hyperf/hyperf/blob/master/LICENSE
+ */
 
 namespace HyperfTest\Cases\Controller;
 
 use App\Model\Account;
 use App\Model\PixKey;
-use Hyperf\Testing\TestCase;
+use Hyperf\Database\Schema\Schema;
 use Hyperf\DbConnection\Db;
+use Hyperf\Testing\TestCase;
 
+/**
+ * @internal
+ * @coversNothing
+ */
 class AccountControllerTest extends TestCase
 {
     protected function setUp(): void
     {
         parent::setUp();
         Db::statement('SET FOREIGN_KEY_CHECKS=0');
-        if (\Hyperf\Database\Schema\Schema::hasTable('pix_keys')) {
+        if (Schema::hasTable('pix_keys')) {
             Db::table('pix_keys')->delete();
         }
-        if (\Hyperf\Database\Schema\Schema::hasTable('account_withdraw_pix')) {
+        if (Schema::hasTable('account_withdraw_pix')) {
             Db::table('account_withdraw_pix')->delete();
         }
-        if (\Hyperf\Database\Schema\Schema::hasTable('account_withdraw')) {
+        if (Schema::hasTable('account_withdraw')) {
             Db::table('account_withdraw')->delete();
         }
-        if (\Hyperf\Database\Schema\Schema::hasTable('account')) {
+        if (Schema::hasTable('account')) {
             Db::table('account')->delete();
         }
         Db::statement('SET FOREIGN_KEY_CHECKS=1');

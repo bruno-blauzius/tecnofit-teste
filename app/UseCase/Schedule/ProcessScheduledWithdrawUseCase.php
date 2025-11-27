@@ -1,29 +1,34 @@
 <?php
 
 declare(strict_types=1);
+/**
+ * This file is part of Hyperf.
+ *
+ * @link     https://www.hyperf.io
+ * @document https://hyperf.wiki
+ * @contact  group@hyperf.io
+ * @license  https://github.com/hyperf/hyperf/blob/master/LICENSE
+ */
 
 namespace App\UseCase\Schedule;
 
-use App\Model\Account;
-use App\Model\AccountWithdraw;
-use App\Model\AccountTransactionHistory;
 use App\Helper\EmailHelper;
+use App\Model\Account;
+use App\Model\AccountTransactionHistory;
+use App\Model\AccountWithdraw;
+use Exception;
 use Hyperf\DbConnection\Db;
-
-use function Hyperf\Support\with;
 
 class ProcessScheduledWithdrawUseCase
 {
     public function __construct(
         private readonly Account $accountModel,
         private readonly AccountTransactionHistory $transactionHistoryModel,
-    ) {}
+    ) {
+    }
 
     /**
-     * Processa um saque agendado individual
-     *
-     * @param AccountWithdraw $withdraw
-     * @return array
+     * Processa um saque agendado individual.
      */
     public function execute(AccountWithdraw $withdraw): array
     {
@@ -31,8 +36,8 @@ class ProcessScheduledWithdrawUseCase
             // Buscar a conta
             $account = $this->accountModel->with('user')->find($withdraw->account_id);
 
-            if (!$account) {
-                throw new \Exception("Conta não encontrada: {$withdraw->account_id}");
+            if (! $account) {
+                throw new Exception("Conta não encontrada: {$withdraw->account_id}");
             }
 
             // Validar saldo
@@ -40,7 +45,7 @@ class ProcessScheduledWithdrawUseCase
             $currentBalance = (float) $account->balance;
 
             if ($amount > $currentBalance) {
-                throw new \Exception("Saldo insuficiente. Saldo atual: {$currentBalance}, Valor do saque: {$amount}");
+                throw new Exception("Saldo insuficiente. Saldo atual: {$currentBalance}, Valor do saque: {$amount}");
             }
 
             // Deduzir saldo
@@ -48,7 +53,7 @@ class ProcessScheduledWithdrawUseCase
             $newBalance = $currentBalance - $amount;
 
             if ($newBalance < 0) {
-                throw new \Exception("O saldo não pode ficar negativo");
+                throw new Exception('O saldo não pode ficar negativo');
             }
 
             $account->balance = $newBalance;
@@ -94,7 +99,7 @@ class ProcessScheduledWithdrawUseCase
     }
 
     /**
-     * Registra uma transação no histórico
+     * Registra uma transação no histórico.
      */
     private function recordTransaction(
         string $accountId,

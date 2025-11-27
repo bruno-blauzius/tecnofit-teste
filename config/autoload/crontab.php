@@ -9,6 +9,7 @@ declare(strict_types=1);
  * @contact  group@hyperf.io
  * @license  https://github.com/hyperf/hyperf/blob/master/LICENSE
  */
+use App\Crontab\ProcessScheduledWithdrawsCrontab;
 use Hyperf\Crontab\Crontab;
 
 return [
@@ -17,7 +18,7 @@ return [
         (new Crontab())
             ->setName('process_scheduled_withdraws')
             ->setRule('*/1 * * * *') // a cada 1 minuto
-            ->setCallback([\App\Crontab\ProcessScheduledWithdrawsCrontab::class, 'handle'])
+            ->setCallback([ProcessScheduledWithdrawsCrontab::class, 'handle'])
             ->setMemo('Processa saques agendados automaticamente'),
     ],
 ];

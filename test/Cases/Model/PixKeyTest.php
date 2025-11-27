@@ -1,12 +1,21 @@
 <?php
 
 declare(strict_types=1);
+/**
+ * This file is part of Hyperf.
+ *
+ * @link     https://www.hyperf.io
+ * @document https://hyperf.wiki
+ * @contact  group@hyperf.io
+ * @license  https://github.com/hyperf/hyperf/blob/master/LICENSE
+ */
 
 namespace HyperfTest\Cases\Model;
 
 use App\Model\PixKey;
 use Hyperf\DbConnection\Db;
 use HyperfTest\HttpTestCase;
+use InvalidArgumentException;
 
 /**
  * @internal
@@ -27,25 +36,6 @@ class PixKeyTest extends HttpTestCase
         parent::tearDown();
     }
 
-    private function truncateTables(): void
-    {
-        Db::statement('SET FOREIGN_KEY_CHECKS=0;');
-        Db::table('pix_keys')->truncate();
-        Db::table('account')->truncate();
-        Db::statement('SET FOREIGN_KEY_CHECKS=1;');
-    }
-
-    private function createTestAccount(): void
-    {
-        Db::table('account')->insert([
-            'id' => 'test-account-id',
-            'name' => 'Test Account',
-            'balance' => 1000.00,
-            'created_at' => date('Y-m-d H:i:s'),
-            'updated_at' => date('Y-m-d H:i:s'),
-        ]);
-    }
-
     public function testCreatePixKeyWithValidCpf()
     {
         $pixKey = new PixKey();
@@ -61,7 +51,7 @@ class PixKeyTest extends HttpTestCase
 
     public function testCreatePixKeyWithInvalidCpf()
     {
-        $this->expectException(\InvalidArgumentException::class);
+        $this->expectException(InvalidArgumentException::class);
         $this->expectExceptionMessage('Chave PIX inválida para o tipo "cpf"');
 
         $pixKey = new PixKey();
@@ -86,7 +76,7 @@ class PixKeyTest extends HttpTestCase
 
     public function testCreatePixKeyWithInvalidCnpj()
     {
-        $this->expectException(\InvalidArgumentException::class);
+        $this->expectException(InvalidArgumentException::class);
         $this->expectExceptionMessage('Chave PIX inválida para o tipo "cnpj"');
 
         $pixKey = new PixKey();
@@ -111,7 +101,7 @@ class PixKeyTest extends HttpTestCase
 
     public function testCreatePixKeyWithInvalidEmail()
     {
-        $this->expectException(\InvalidArgumentException::class);
+        $this->expectException(InvalidArgumentException::class);
         $this->expectExceptionMessage('Chave PIX inválida para o tipo "email"');
 
         $pixKey = new PixKey();
@@ -147,7 +137,7 @@ class PixKeyTest extends HttpTestCase
 
     public function testCreatePixKeyWithInvalidPhone()
     {
-        $this->expectException(\InvalidArgumentException::class);
+        $this->expectException(InvalidArgumentException::class);
         $this->expectExceptionMessage('Chave PIX inválida para o tipo "phone"');
 
         $pixKey = new PixKey();
@@ -172,7 +162,7 @@ class PixKeyTest extends HttpTestCase
 
     public function testCreatePixKeyWithInvalidRandomKey()
     {
-        $this->expectException(\InvalidArgumentException::class);
+        $this->expectException(InvalidArgumentException::class);
         $this->expectExceptionMessage('Chave PIX inválida para o tipo "random"');
 
         $pixKey = new PixKey();
@@ -185,7 +175,7 @@ class PixKeyTest extends HttpTestCase
 
     public function testCreatePixKeyWithoutKeyType()
     {
-        $this->expectException(\InvalidArgumentException::class);
+        $this->expectException(InvalidArgumentException::class);
         $this->expectExceptionMessage('Tipo e valor da chave PIX são obrigatórios');
 
         $pixKey = new PixKey();
@@ -197,7 +187,7 @@ class PixKeyTest extends HttpTestCase
 
     public function testCreatePixKeyWithoutKeyValue()
     {
-        $this->expectException(\InvalidArgumentException::class);
+        $this->expectException(InvalidArgumentException::class);
         $this->expectExceptionMessage('Tipo e valor da chave PIX são obrigatórios');
 
         $pixKey = new PixKey();
@@ -280,7 +270,7 @@ class PixKeyTest extends HttpTestCase
 
     public function testUpdatePixKeyWithInvalidValue()
     {
-        $this->expectException(\InvalidArgumentException::class);
+        $this->expectException(InvalidArgumentException::class);
 
         $pixKey = new PixKey();
         $pixKey->account_id = 'test-account-id';
@@ -348,5 +338,24 @@ class PixKeyTest extends HttpTestCase
     public function testValidateKeyValueInvalidType()
     {
         $this->assertFalse(PixKey::validateKeyValue('invalid_type', 'any_value'));
+    }
+
+    private function truncateTables(): void
+    {
+        Db::statement('SET FOREIGN_KEY_CHECKS=0;');
+        Db::table('pix_keys')->truncate();
+        Db::table('account')->truncate();
+        Db::statement('SET FOREIGN_KEY_CHECKS=1;');
+    }
+
+    private function createTestAccount(): void
+    {
+        Db::table('account')->insert([
+            'id' => 'test-account-id',
+            'name' => 'Test Account',
+            'balance' => 1000.00,
+            'created_at' => date('Y-m-d H:i:s'),
+            'updated_at' => date('Y-m-d H:i:s'),
+        ]);
     }
 }

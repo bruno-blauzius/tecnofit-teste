@@ -1,22 +1,32 @@
 <?php
 
 declare(strict_types=1);
+/**
+ * This file is part of Hyperf.
+ *
+ * @link     https://www.hyperf.io
+ * @document https://hyperf.wiki
+ * @contact  group@hyperf.io
+ * @license  https://github.com/hyperf/hyperf/blob/master/LICENSE
+ */
 
 namespace App\Controller;
 
+use App\Helper\JsonResponse;
 use App\Request\RegisterRequest as RegisterFormRequest;
 use App\UseCase\User\RegisterRequest;
 use App\UseCase\User\RegisterUseCase;
+use Exception;
 use Hyperf\HttpServer\Contract\ResponseInterface;
-use App\Helper\JsonResponse;
+use InvalidArgumentException;
 use OpenApi\Attributes as OA;
 
 class RegisterController extends AbstractController
 {
-
     public function __construct(
         protected RegisterUseCase $registerUseCase,
-    ) {}
+    ) {
+    }
 
     #[OA\Post(
         path: '/api/v1/public/register',
@@ -90,10 +100,9 @@ class RegisterController extends AbstractController
             $result = $this->registerUseCase->execute($dto);
 
             return JsonResponse::success($response, $result, 201, 'Usuário registrado com sucesso!');
-
-        } catch (\InvalidArgumentException $e) {
+        } catch (InvalidArgumentException $e) {
             return JsonResponse::error($response, $e->getMessage(), 422);
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             return JsonResponse::error($response, $e->getMessage(), 500);
         }
     }

@@ -1,14 +1,23 @@
 <?php
 
 declare(strict_types=1);
+/**
+ * This file is part of Hyperf.
+ *
+ * @link     https://www.hyperf.io
+ * @document https://hyperf.wiki
+ * @contact  group@hyperf.io
+ * @license  https://github.com/hyperf/hyperf/blob/master/LICENSE
+ */
 
 namespace App\UseCase\Schedule;
 
+use App\Helper\EmailHelper;
 use App\Model\Account;
 use App\Model\AccountWithdraw;
-use App\Helper\EmailHelper;
 use DateTimeImmutable;
 use Hyperf\Coroutine\Parallel;
+use Throwable;
 
 class ScheduleUseCase
 {
@@ -18,11 +27,12 @@ class ScheduleUseCase
         private readonly AccountWithdraw $withdrawModel,
         private readonly Account $accountModel,
         private readonly ProcessScheduledWithdrawUseCase $processWithdrawUseCase,
-    ) {}
+    ) {
+    }
 
     /**
      * Processa todos os saques agendados que estão prontos para serem executados
-     * Utiliza processamento paralelo com Coroutines para melhor performance
+     * Utiliza processamento paralelo com Coroutines para melhor performance.
      *
      * @return array Resultado do processamento
      */
@@ -57,7 +67,7 @@ class ScheduleUseCase
             $parallel->add(function () use ($withdraw) {
                 try {
                     return $this->processWithdrawUseCase->execute($withdraw);
-                } catch (\Throwable $e) {
+                } catch (Throwable $e) {
                     $this->handleWithdrawError($withdraw, $e->getMessage());
                     return [
                         'withdraw_id' => $withdraw->id,
@@ -75,9 +85,9 @@ class ScheduleUseCase
 
         foreach ($results as $result) {
             if (isset($result['status']) && $result['status'] === 'success') {
-                $processed++;
+                ++$processed;
             } else {
-                $errors++;
+                ++$errors;
             }
         }
 
@@ -90,7 +100,7 @@ class ScheduleUseCase
     }
 
     /**
-     * Trata erro no processamento de saque agendado
+     * Trata erro no processamento de saque agendado.
      */
     private function handleWithdrawError(AccountWithdraw $withdraw, string $errorMessage): void
     {

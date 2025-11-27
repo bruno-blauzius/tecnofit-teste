@@ -1,12 +1,20 @@
 <?php
 
 declare(strict_types=1);
+/**
+ * This file is part of Hyperf.
+ *
+ * @link     https://www.hyperf.io
+ * @document https://hyperf.wiki
+ * @contact  group@hyperf.io
+ * @license  https://github.com/hyperf/hyperf/blob/master/LICENSE
+ */
 
 namespace App\Request;
 
-use Hyperf\Validation\Request\FormRequest;
-use Hyperf\HttpServer\Contract\ResponseInterface;
 use Hyperf\Contract\ValidatorInterface;
+use Hyperf\HttpServer\Contract\ResponseInterface;
+use Hyperf\Validation\Request\FormRequest;
 use Hyperf\Validation\ValidationException;
 
 class AuthRequest extends FormRequest
@@ -25,32 +33,29 @@ class AuthRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'email'    => 'required|email',
+            'email' => 'required|email',
             'password' => 'required|string|min:6',
         ];
     }
 
-
     public function attributes(): array
     {
         return [
-            'email'    => 'e-mail',
+            'email' => 'e-mail',
             'password' => 'senha',
         ];
     }
 
-
     public function messages(): array
     {
         return [
-            'email.required'    => 'O campo :attribute é obrigatório.',
-            'email.email'       => 'O campo :attribute deve ser um e-mail válido.',
+            'email.required' => 'O campo :attribute é obrigatório.',
+            'email.email' => 'O campo :attribute deve ser um e-mail válido.',
             'password.required' => 'O campo :attribute é obrigatório.',
-            'password.string'   => 'O campo :attribute deve ser uma string.',
-            'password.min'      => 'O campo :attribute deve ter no mínimo :min caracteres.',
+            'password.string' => 'O campo :attribute deve ser uma string.',
+            'password.min' => 'O campo :attribute deve ter no mínimo :min caracteres.',
         ];
     }
-
 
     protected function failedValidation(ValidatorInterface $validator)
     {
@@ -58,7 +63,7 @@ class AuthRequest extends FormRequest
         $response = $this->container->get(ResponseInterface::class);
         $payload = [
             'message' => 'Os dados enviados são inválidos.',
-            'errors'  => $validator->errors()->messages(),
+            'errors' => $validator->errors()->messages(),
         ];
 
         throw new ValidationException(

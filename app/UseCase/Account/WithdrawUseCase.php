@@ -1,15 +1,23 @@
 <?php
 
 declare(strict_types=1);
+/**
+ * This file is part of Hyperf.
+ *
+ * @link     https://www.hyperf.io
+ * @document https://hyperf.wiki
+ * @contact  group@hyperf.io
+ * @license  https://github.com/hyperf/hyperf/blob/master/LICENSE
+ */
 
 namespace App\UseCase\Account;
 
+use App\Helper\EmailHelper;
 use App\Model\Account;
+use App\Model\AccountTransactionHistory;
 use App\Model\AccountWithdraw;
 use App\Model\AccountWithdrawPix;
-use App\Model\AccountTransactionHistory;
 use App\Model\PixKey;
-use App\Helper\EmailHelper;
 use App\UseCase\Account\Exception\AccountNotFoundException;
 use App\UseCase\Account\Exception\InsufficientBalanceException;
 use App\UseCase\Account\Exception\InvalidScheduleException;
@@ -18,12 +26,17 @@ use DateTimeImmutable;
 use Hyperf\DbConnection\Db;
 use Hyperf\Metric\Contract\CounterInterface;
 use Hyperf\Metric\Contract\HistogramInterface;
+use Hyperf\Metric\Contract\MetricFactoryInterface;
+use LogicException;
 use Psr\Container\ContainerInterface;
+use Throwable;
 
 final class WithdrawUseCase
 {
     private CounterInterface $withdrawCounter;
+
     private HistogramInterface $withdrawDuration;
+
     private CounterInterface $withdrawAmount;
 
     public function __construct(
@@ -34,7 +47,7 @@ final class WithdrawUseCase
         private readonly PixKey $pixKeyModel,
         ContainerInterface $container,
     ) {
-        $factory = $container->get(\Hyperf\Metric\Contract\MetricFactoryInterface::class);
+        $factory = $container->get(MetricFactoryInterface::class);
 
         $this->withdrawCounter = $factory->makeCounter(
             'withdraw_total',
@@ -58,40 +71,40 @@ final class WithdrawUseCase
         $startTime = microtime(true);
 
         try {
-            $result = Db::transaction(function () use ($request, $type) {
-            $account = $this->findAccount($request->accountId);
+            $result = Db::transaction(function () use ($request) {
+                $account = $this->findAccount($request->accountId);
 
-            $this->validatePixKey($account->id, $request->pixKey);
+                $this->validatePixKey($account->id, $request->pixKey);
 
-            $this->validateSchedule($request);
-            $this->validateAmount($account, $request->amount);
+                $this->validateSchedule($request);
+                $this->validateAmount($account, $request->amount);
 
-            if (! $request->isScheduled()) {
-                $this->deductBalance($account, $request->amount);
-            }
+                if (! $request->isScheduled()) {
+                    $this->deductBalance($account, $request->amount);
+                }
 
-            $withdraw = $this->createWithdraw($account, $request);
-            $this->createWithdrawPix($withdraw, $request);
+                $withdraw = $this->createWithdraw($account, $request);
+                $this->createWithdrawPix($withdraw, $request);
 
-            // Registrar histórico e enviar email para saque agendado
-            if ($request->isScheduled()) {
-                $this->recordAndNotifyScheduledWithdraw(
-                    $account,
-                    $request->amount,
-                    $request->scheduleAt->format('Y-m-d H:i:s'),
-                    $withdraw->id
-                );
-            }
+                // Registrar histórico e enviar email para saque agendado
+                if ($request->isScheduled()) {
+                    $this->recordAndNotifyScheduledWithdraw(
+                        $account,
+                        $request->amount,
+                        $request->scheduleAt->format('Y-m-d H:i:s'),
+                        $withdraw->id
+                    );
+                }
 
-            return [
-                'withdraw_id' => $withdraw->id,
-                'account_id'  => $account->id,
-                'amount'      => $request->amount,
-                'scheduled'   => $request->isScheduled(),
-                'schedule_at' => $request->scheduleAt?->format('Y-m-d H:i:s'),
-                'balance'     => $account->balance,
-            ];
-        });
+                return [
+                    'withdraw_id' => $withdraw->id,
+                    'account_id' => $account->id,
+                    'amount' => $request->amount,
+                    'scheduled' => $request->isScheduled(),
+                    'schedule_at' => $request->scheduleAt?->format('Y-m-d H:i:s'),
+                    'balance' => $account->balance,
+                ];
+            });
 
             // Métrica de sucesso
             $this->withdrawCounter
@@ -103,8 +116,7 @@ final class WithdrawUseCase
                 ->add((int) ($request->amount * 100)); // Converte para centavos (int)
 
             return $result;
-
-        } catch (\Throwable $e) {
+        } catch (Throwable $e) {
             // Métrica de erro
             $this->withdrawCounter
                 ->with('error', $type)
@@ -119,7 +131,7 @@ final class WithdrawUseCase
 
     private function findAccount(string $accountId): Account
     {
-        /** @var Account|null $account */
+        /** @var null|Account $account */
         $account = $this->accountModel->with('user')->find($accountId);
 
         if ($account === null) {
@@ -131,7 +143,7 @@ final class WithdrawUseCase
 
     private function validatePixKey(string $accountId, string $pixKey): void
     {
-        /** @var PixKey|null $pixKey */
+        /** @var null|PixKey $pixKey */
         $pixKey = $this->pixKeyModel
             ->where('account_id', $accountId)
             ->where('key_value', $pixKey)
@@ -165,7 +177,7 @@ final class WithdrawUseCase
             throw new InsufficientBalanceException('O valor do saque deve ser maior que zero.');
         }
 
-        /**
+        /*
          * Para saque imediato, o saldo precisa estar disponível agora.
          * Para saque agendado, depende da regra de negócio:
          * aqui vou seguir as regras que você passou:
@@ -221,13 +233,13 @@ final class WithdrawUseCase
         /** @var AccountWithdraw $withdraw */
         $withdraw = $this->withdrawModel->newModelInstance();
 
-        $withdraw->account_id   = $account->id;
-        $withdraw->method       = $request->method;
-        $withdraw->amount       = $request->amount;
-        $withdraw->scheduled    = $request->isScheduled();
+        $withdraw->account_id = $account->id;
+        $withdraw->method = $request->method;
+        $withdraw->amount = $request->amount;
+        $withdraw->scheduled = $request->isScheduled();
         $withdraw->scheduled_for = $request->scheduleAt?->format('Y-m-d H:i:s');
-        $withdraw->done         = ! $request->isScheduled(); // done = true se não for agendado
-        $withdraw->error        = false;
+        $withdraw->done = ! $request->isScheduled(); // done = true se não for agendado
+        $withdraw->error = false;
         $withdraw->error_reason = null;
 
         $withdraw->save();
@@ -238,15 +250,15 @@ final class WithdrawUseCase
     private function createWithdrawPix(AccountWithdraw $withdraw, WithdrawRequest $request): void
     {
         if ($request->pixType !== 'email') {
-            throw new \LogicException('Somente chaves PIX do tipo email são suportadas atualmente.');
+            throw new LogicException('Somente chaves PIX do tipo email são suportadas atualmente.');
         }
 
         /** @var AccountWithdrawPix $pix */
         $pix = $this->withdrawPixModel->newModelInstance();
 
         $pix->account_withdraw_id = $withdraw->id;
-        $pix->type                = $request->pixType;
-        $pix->key_value           = $request->pixKey;
+        $pix->type = $request->pixType;
+        $pix->key_value = $request->pixKey;
 
         $pix->save();
     }
@@ -313,7 +325,7 @@ final class WithdrawUseCase
     }
 
     /**
-     * Obtém o email do usuário associado à conta
+     * Obtém o email do usuário associado à conta.
      */
     private function getUserEmail(Account $account): string
     {

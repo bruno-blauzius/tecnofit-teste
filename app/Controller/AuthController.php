@@ -1,15 +1,24 @@
 <?php
 
 declare(strict_types=1);
+/**
+ * This file is part of Hyperf.
+ *
+ * @link     https://www.hyperf.io
+ * @document https://hyperf.wiki
+ * @contact  group@hyperf.io
+ * @license  https://github.com/hyperf/hyperf/blob/master/LICENSE
+ */
 
 namespace App\Controller;
 
-use App\Helper\JwtHelper;
 use App\Helper\JsonResponse;
+use App\Helper\JwtHelper;
 use App\Model\User;
 use App\Request\AuthRequest;
-use Hyperf\HttpServer\Contract\ResponseInterface;
 use Hyperf\Context\ApplicationContext;
+use Hyperf\Contract\ConfigInterface;
+use Hyperf\HttpServer\Contract\ResponseInterface;
 use OpenApi\Attributes as OA;
 
 class AuthController
@@ -71,7 +80,7 @@ class AuthController
         $user = User::where('email', $email)->first();
 
         // Verifica se o usuário existe e se a senha está correta
-        if (!$user || !$user->verifyPassword($password)) {
+        if (! $user || ! $user->verifyPassword($password)) {
             return JsonResponse::error($response, 'Credenciais inválidas', 401);
         }
 
@@ -79,7 +88,7 @@ class AuthController
         $token = JwtHelper::generate($user->id, $user->email);
 
         $container = ApplicationContext::getContainer();
-        $config = $container->get(\Hyperf\Contract\ConfigInterface::class);
+        $config = $container->get(ConfigInterface::class);
         $expiresIn = $config->get('jwt.expiration', 3600);
 
         return JsonResponse::success($response, [

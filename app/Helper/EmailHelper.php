@@ -1,16 +1,26 @@
 <?php
 
 declare(strict_types=1);
+/**
+ * This file is part of Hyperf.
+ *
+ * @link     https://www.hyperf.io
+ * @document https://hyperf.wiki
+ * @contact  group@hyperf.io
+ * @license  https://github.com/hyperf/hyperf/blob/master/LICENSE
+ */
 
 namespace App\Helper;
 
-use PHPMailer\PHPMailer\PHPMailer;
 use PHPMailer\PHPMailer\Exception;
+use PHPMailer\PHPMailer\PHPMailer;
 
 class EmailHelper
 {
     private const DEFAULT_RECIPIENT = 'cliente@example.com';
+
     private const SENDER_EMAIL = 'noreply@tecnofit.com.br';
+
     private const SENDER_NAME = 'Tecnofit Sistema';
 
     private const TRANSACTION_TYPES = [
@@ -21,86 +31,7 @@ class EmailHelper
     ];
 
     /**
-     * Configura e retorna uma instância do PHPMailer
-     */
-    private static function getMailer(): PHPMailer
-    {
-        $mail = new PHPMailer(true);
-
-        try {
-            $mail->isSMTP();
-            $mail->Host = getenv('MAIL_HOST') ?: 'mailhog';
-            $mail->Port = (int) (getenv('MAIL_PORT') ?: 1025);
-            $mail->SMTPAuth = false;
-            $mail->CharSet = 'UTF-8';
-            $mail->setFrom(self::SENDER_EMAIL, self::SENDER_NAME);
-        } catch (\Exception $e) {
-            self::logError("Erro ao configurar mailer: {$mail->ErrorInfo}");
-        }
-
-        return $mail;
-    }
-
-    /**
-     * Envia um email genérico
-     */
-    private static function sendEmail(
-        string $recipientEmail,
-        string $subject,
-        string $htmlBody,
-        string $textBody
-    ): bool {
-        try {
-            $mail = self::getMailer();
-            $mail->addAddress($recipientEmail);
-            $mail->isHTML(true);
-            $mail->Subject = $subject;
-            $mail->Body = $htmlBody;
-            $mail->AltBody = $textBody;
-
-            $mail->send();
-            self::logSuccess("Email enviado para {$recipientEmail}");
-            return true;
-        } catch (Exception $e) {
-            self::logError("Erro ao enviar email: {$e->getMessage()}");
-            return false;
-        }
-    }
-
-    /**
-     * Formata valor monetário
-     */
-    private static function formatCurrency(float $value): string
-    {
-        return sprintf('R$ %.2f', $value);
-    }
-
-    /**
-     * Obtém o label da transação
-     */
-    private static function getTransactionLabel(string $type): string
-    {
-        return self::TRANSACTION_TYPES[$type] ?? 'Transação';
-    }
-
-    /**
-     * Log de sucesso
-     */
-    private static function logSuccess(string $message): void
-    {
-        echo "[EMAIL] {$message}" . PHP_EOL;
-    }
-
-    /**
-     * Log de erro
-     */
-    private static function logError(string $message): void
-    {
-        echo "[EMAIL ERROR] {$message}" . PHP_EOL;
-    }
-
-    /**
-     * Envia um email de notificação de saque agendado
+     * Envia um email de notificação de saque agendado.
      */
     public static function sendScheduledWithdrawNotification(
         string $accountId,
@@ -135,7 +66,7 @@ class EmailHelper
     }
 
     /**
-     * Envia um email de erro no processamento de saque agendado
+     * Envia um email de erro no processamento de saque agendado.
      */
     public static function sendScheduledWithdrawError(
         string $accountId,
@@ -170,7 +101,7 @@ class EmailHelper
     }
 
     /**
-     * Envia um email de notificação de transação bem-sucedida
+     * Envia um email de notificação de transação bem-sucedida.
      */
     public static function sendTransactionNotification(
         string $accountId,
@@ -220,7 +151,7 @@ class EmailHelper
     }
 
     /**
-     * Envia um email de confirmação de criação de chave PIX
+     * Envia um email de confirmação de criação de chave PIX.
      */
     public static function sendPixKeyCreatedNotification(
         string $accountId,
@@ -263,5 +194,84 @@ class EmailHelper
         );
 
         return self::sendEmail($recipientEmail, $subject, $htmlBody, $textBody);
+    }
+
+    /**
+     * Configura e retorna uma instância do PHPMailer.
+     */
+    private static function getMailer(): PHPMailer
+    {
+        $mail = new PHPMailer(true);
+
+        try {
+            $mail->isSMTP();
+            $mail->Host = getenv('MAIL_HOST') ?: 'mailhog';
+            $mail->Port = (int) (getenv('MAIL_PORT') ?: 1025);
+            $mail->SMTPAuth = false;
+            $mail->CharSet = 'UTF-8';
+            $mail->setFrom(self::SENDER_EMAIL, self::SENDER_NAME);
+        } catch (\Exception $e) {
+            self::logError("Erro ao configurar mailer: {$mail->ErrorInfo}");
+        }
+
+        return $mail;
+    }
+
+    /**
+     * Envia um email genérico.
+     */
+    private static function sendEmail(
+        string $recipientEmail,
+        string $subject,
+        string $htmlBody,
+        string $textBody
+    ): bool {
+        try {
+            $mail = self::getMailer();
+            $mail->addAddress($recipientEmail);
+            $mail->isHTML(true);
+            $mail->Subject = $subject;
+            $mail->Body = $htmlBody;
+            $mail->AltBody = $textBody;
+
+            $mail->send();
+            self::logSuccess("Email enviado para {$recipientEmail}");
+            return true;
+        } catch (Exception $e) {
+            self::logError("Erro ao enviar email: {$e->getMessage()}");
+            return false;
+        }
+    }
+
+    /**
+     * Formata valor monetário.
+     */
+    private static function formatCurrency(float $value): string
+    {
+        return sprintf('R$ %.2f', $value);
+    }
+
+    /**
+     * Obtém o label da transação.
+     */
+    private static function getTransactionLabel(string $type): string
+    {
+        return self::TRANSACTION_TYPES[$type] ?? 'Transação';
+    }
+
+    /**
+     * Log de sucesso.
+     */
+    private static function logSuccess(string $message): void
+    {
+        echo "[EMAIL] {$message}" . PHP_EOL;
+    }
+
+    /**
+     * Log de erro.
+     */
+    private static function logError(string $message): void
+    {
+        echo "[EMAIL ERROR] {$message}" . PHP_EOL;
     }
 }

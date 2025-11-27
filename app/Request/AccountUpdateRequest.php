@@ -1,14 +1,22 @@
 <?php
 
 declare(strict_types=1);
+/**
+ * This file is part of Hyperf.
+ *
+ * @link     https://www.hyperf.io
+ * @document https://hyperf.wiki
+ * @contact  group@hyperf.io
+ * @license  https://github.com/hyperf/hyperf/blob/master/LICENSE
+ */
 
 namespace App\Request;
 
 use Hyperf\Contract\ValidatorInterface;
-use Hyperf\Validation\Request\FormRequest;
-use Hyperf\Validation\ValidationException;
 use Hyperf\HttpMessage\Stream\SwooleStream;
 use Hyperf\HttpServer\Contract\ResponseInterface as HttpResponse;
+use Hyperf\Validation\Request\FormRequest;
+use Hyperf\Validation\ValidationException;
 
 class AccountUpdateRequest extends FormRequest
 {

@@ -1,15 +1,28 @@
 <?php
 
 declare(strict_types=1);
+/**
+ * This file is part of Hyperf.
+ *
+ * @link     https://www.hyperf.io
+ * @document https://hyperf.wiki
+ * @contact  group@hyperf.io
+ * @license  https://github.com/hyperf/hyperf/blob/master/LICENSE
+ */
 
 namespace HyperfTest\Cases\UseCase\Account;
 
-use App\Model\Account;
+use App\Model\AccountTransactionHistory;
 use App\UseCase\Account\CreateAccountRequest;
 use App\UseCase\Account\CreateAccountUseCase;
-use PHPUnit\Framework\TestCase;
+use Hyperf\Database\Schema\Schema;
 use Hyperf\DbConnection\Db;
+use PHPUnit\Framework\TestCase;
 
+/**
+ * @internal
+ * @coversNothing
+ */
 class CreateAccountUseCaseTest extends TestCase
 {
     private CreateAccountUseCase $useCase;
@@ -17,10 +30,10 @@ class CreateAccountUseCaseTest extends TestCase
     protected function setUp(): void
     {
         parent::setUp();
-        if (\Hyperf\Database\Schema\Schema::hasTable('account')) {
+        if (Schema::hasTable('account')) {
             Db::table('account')->delete();
         }
-        $this->useCase = new CreateAccountUseCase(new \App\Model\AccountTransactionHistory());
+        $this->useCase = new CreateAccountUseCase(new AccountTransactionHistory());
     }
 
     public function testExecuteCreatesAccountWithValidData()
@@ -39,7 +52,6 @@ class CreateAccountUseCaseTest extends TestCase
         $this->assertArrayHasKey('updated_at', $result);
 
         $this->assertDatabaseHas('account', [
-
             'balance' => 1000.50,
         ]);
     }
@@ -55,7 +67,6 @@ class CreateAccountUseCaseTest extends TestCase
 
         $this->assertSame(0.0, $result['balance']);
         $this->assertDatabaseHas('account', [
-
             'balance' => 0,
         ]);
     }

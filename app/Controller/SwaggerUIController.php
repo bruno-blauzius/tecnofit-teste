@@ -1,10 +1,18 @@
 <?php
 
 declare(strict_types=1);
+/**
+ * This file is part of Hyperf.
+ *
+ * @link     https://www.hyperf.io
+ * @document https://hyperf.wiki
+ * @contact  group@hyperf.io
+ * @license  https://github.com/hyperf/hyperf/blob/master/LICENSE
+ */
 
 namespace App\Controller;
 
-use Hyperf\HttpServer\Contract\RequestInterface;
+use Hyperf\HttpMessage\Stream\SwooleStream;
 use Hyperf\HttpServer\Contract\ResponseInterface;
 
 class SwaggerUIController
@@ -13,9 +21,9 @@ class SwaggerUIController
     {
         $jsonFile = BASE_PATH . '/storage/swagger/swagger.json';
 
-        if (!file_exists($jsonFile)) {
+        if (! file_exists($jsonFile)) {
             return $response->withStatus(404)->json([
-                'error' => 'Swagger documentation not found. Please run: php generate-swagger.php'
+                'error' => 'Swagger documentation not found. Please run: php generate-swagger.php',
             ]);
         }
 
@@ -24,16 +32,16 @@ class SwaggerUIController
         return $response
             ->withHeader('Content-Type', 'application/json')
             ->withHeader('Access-Control-Allow-Origin', '*')
-            ->withBody(new \Hyperf\HttpMessage\Stream\SwooleStream($json));
+            ->withBody(new SwooleStream($json));
     }
 
     public function ui(ResponseInterface $response)
     {
         $htmlFile = BASE_PATH . '/public/swagger.html';
 
-        if (!file_exists($htmlFile)) {
+        if (! file_exists($htmlFile)) {
             return $response->withStatus(404)->json([
-                'error' => 'Swagger UI not found.'
+                'error' => 'Swagger UI not found.',
             ]);
         }
 
@@ -41,6 +49,6 @@ class SwaggerUIController
 
         return $response
             ->withHeader('Content-Type', 'text/html')
-            ->withBody(new \Hyperf\HttpMessage\Stream\SwooleStream($html));
+            ->withBody(new SwooleStream($html));
     }
 }

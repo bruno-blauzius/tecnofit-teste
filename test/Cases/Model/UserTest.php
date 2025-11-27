@@ -1,24 +1,39 @@
 <?php
 
 declare(strict_types=1);
+/**
+ * This file is part of Hyperf.
+ *
+ * @link     https://www.hyperf.io
+ * @document https://hyperf.wiki
+ * @contact  group@hyperf.io
+ * @license  https://github.com/hyperf/hyperf/blob/master/LICENSE
+ */
 
 namespace HyperfTest\Cases\Model;
 
-use App\Model\User;
 use App\Model\Account;
-use Hyperf\Testing\TestCase;
+use App\Model\User;
+use Hyperf\Database\Schema\Schema;
 use Hyperf\DbConnection\Db;
+use Hyperf\Testing\TestCase;
+use InvalidArgumentException;
+use PDOException;
 
+/**
+ * @internal
+ * @coversNothing
+ */
 class UserTest extends TestCase
 {
     protected function setUp(): void
     {
         parent::setUp();
         Db::statement('SET FOREIGN_KEY_CHECKS=0');
-        if (\Hyperf\Database\Schema\Schema::hasTable('users')) {
+        if (Schema::hasTable('users')) {
             Db::table('users')->delete();
         }
-        if (\Hyperf\Database\Schema\Schema::hasTable('account')) {
+        if (Schema::hasTable('account')) {
             Db::table('account')->delete();
         }
         Db::statement('SET FOREIGN_KEY_CHECKS=1');
@@ -102,7 +117,7 @@ class UserTest extends TestCase
 
     public function testUserValidatesEmailFormat()
     {
-        $this->expectException(\InvalidArgumentException::class);
+        $this->expectException(InvalidArgumentException::class);
         $this->expectExceptionMessage('O e-mail fornecido não é válido.');
 
         User::create([
@@ -223,7 +238,7 @@ class UserTest extends TestCase
             'password' => 'secret123',
         ]);
 
-        $this->expectException(\PDOException::class);
+        $this->expectException(PDOException::class);
 
         User::create([
             'name' => 'Jane Doe',
@@ -256,7 +271,7 @@ class UserTest extends TestCase
             'password' => 'secret123',
         ]);
 
-        $this->expectException(\InvalidArgumentException::class);
+        $this->expectException(InvalidArgumentException::class);
         $this->expectExceptionMessage('O e-mail fornecido não é válido.');
 
         $user->email = 'invalid-email';
