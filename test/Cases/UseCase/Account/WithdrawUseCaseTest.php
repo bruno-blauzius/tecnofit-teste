@@ -296,6 +296,33 @@ class WithdrawUseCaseTest extends TestCase
         $this->useCase->execute($request);
     }
 
+    public function testExecuteThrowsExceptionWhenPixKeyDoesNotMatch()
+    {
+        $account = Account::create(['name' => 'Test Account', 'balance' => 1000]);
+
+        // Criar chave PIX diferente da que será usada no saque
+        PixKey::create([
+            'account_id' => $account->id,
+            'key_type' => 'email',
+            'key_value' => 'correct@example.com',
+            'status' => 'active',
+        ]);
+
+        $this->expectException(PixKeyNotFoundException::class);
+        $this->expectExceptionMessage('Nenhuma chave PIX ativa encontrada para esta conta');
+
+        $request = new WithdrawRequest(
+            accountId: $account->id,
+            amount: 100,
+            method: 'PIX',
+            pixType: 'email',
+            pixKey: 'wrong@example.com', // Chave diferente
+            scheduleAt: null
+        );
+
+        $this->useCase->execute($request);
+    }
+
     public function testExecuteRollsBackOnError()
     {
         $account = Account::create(['name' => 'Test Account', 'balance' => 1000]);

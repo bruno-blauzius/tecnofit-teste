@@ -253,4 +253,27 @@ class AccountControllerTest extends TestCase
         $this->assertArrayHasKey('method', $result['errors']);
         $this->assertArrayHasKey('amount', $result['errors']);
     }
+
+    public function testWithdrawReturns422WhenPixKeyDoesNotExist()
+    {
+        $account = Account::create(['name' => 'Test Account', 'balance' => 1000]);
+
+        // Não criar nenhuma chave PIX para a conta
+
+        $response = $this->json("/api/v1/public/accounts/{$account->id}/balance/withdraw", [
+            'method' => 'PIX',
+            'pix' => [
+                'type' => 'email',
+                'key' => 'nonexistent@example.com',
+            ],
+            'amount' => 100,
+            'schedule' => null,
+        ]);
+
+        $response->assertStatus(422);
+        $result = $response->json();
+
+        $this->assertArrayHasKey('message', $result);
+        $this->assertStringContainsString('chave PIX', $result['message']);
+    }
 }
