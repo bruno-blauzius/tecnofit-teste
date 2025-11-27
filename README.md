@@ -331,3 +331,22 @@ class WithdrawScheduledListener
 - **Idempotência** nas operações críticas
 - **Circuit breaker** para serviços externos
 - **Health checks** e métricas (Prometheus/Grafana)
+
+# Debitos técnicos
+
+## Processamento de pagamentos
+
+
+### Versão 1
+Será um possível problema da forma que está sendo entregue o projeto, nesse processo vejo que a melhor forma de ser feita com mais eficiência e performance é estrutura para essa funcionalidade é o Kafka (MSK) e o EKS Kubernets que são as ferramentas da AWS.
+
+Segue um desenho sugerido para melhoria:
+
+Na opção abaixo pode ser que nós tenhamos algum problema de envio do e-mail e o nosso cliente final pode não receber a informação de pagamento.
+
+![Kubernets pagamento](kubernets-pagamento-v1.drawio.svg)
+
+### Versão 2
+Na segunda versão existe a melhoria de entrega de e-mail ou nitificação para o usuário, essa versão ela deve seguir o padrão da estrutura principal pois o volume deve acompanhar a vazão, mas se a opção for por um baixo custo de para esse envio podemos mudar para SQS e Lambda como infra para os envios de e-mail ou usar uma step-functions se precisarmos enviar um conjunto de chamadas tais como SMS, E-mail, whatsapp ou push notification.
+
+![Kubernets pagamento](kubernets-pagamento-v2.drawio.svg)
