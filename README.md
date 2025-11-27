@@ -71,6 +71,7 @@ As migrations devem ser executadas manualmente;
 # Aplicar migrations no banco principal
 docker exec application php bin/hyperf.php migrate
 
+#os testes não funcionam sem rodar essa migrate
 docker exec application php bin/hyperf.php migrate --database=hyperf_test
 
 # Conectar ao banco principal
