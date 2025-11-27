@@ -61,7 +61,7 @@ final class WithdrawUseCase
             $result = Db::transaction(function () use ($request, $type) {
             $account = $this->findAccount($request->accountId);
 
-            $this->validatePixKey($account->id);
+            $this->validatePixKey($account->id, $request->pixKey);
 
             $this->validateSchedule($request);
             $this->validateAmount($account, $request->amount);
@@ -129,11 +129,12 @@ final class WithdrawUseCase
         return $account;
     }
 
-    private function validatePixKey(string $accountId): void
+    private function validatePixKey(string $accountId, string $pixKey): void
     {
         /** @var PixKey|null $pixKey */
         $pixKey = $this->pixKeyModel
             ->where('account_id', $accountId)
+            ->where('key_value', $pixKey)
             ->where('status', 'active')
             ->whereNull('deleted_at')
             ->first();

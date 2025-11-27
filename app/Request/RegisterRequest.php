@@ -51,6 +51,7 @@ class RegisterRequest extends FormRequest
             'name.string' => 'O campo :attribute deve ser uma string.',
             'name.max' => 'O campo :attribute não pode ter mais de :max caracteres.',
             'email.required' => 'O campo :attribute é obrigatório.',
+            'email.unique' => 'O :attribute já está em uso.',
             'email.email' => 'O campo :attribute deve ser um e-mail válido.',
             'email.max' => 'O campo :attribute não pode ter mais de :max caracteres.',
             'password.required' => 'O campo :attribute é obrigatório.',

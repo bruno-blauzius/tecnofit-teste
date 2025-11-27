@@ -110,16 +110,17 @@ Todos os emails enviados podem ser visualizados na interface do Mailhog.
 
 ## Executar Testes
 
-### Suite Completa (132 testes)
+### Suite Completa (133 testes)
 
 ```bash
-# Todos os testes (funcionalidades + PIX + schedule)
+# Todos os testes (funcionalidades + PIX + schedule + validações)
 docker compose exec application composer test
 ```
 
 **Cobertura atual:**
 - ✅ 93 testes originais (contas, saques, transações, autenticação)
 - ✅ 31 testes PIX (validação de chaves CPF, CNPJ, email, phone, random)
+- ✅ 10 testes de validação de chave PIX ativa *(feature adicional)*
 - ✅ 9 testes de agendamento funcional (lógica de negócio)
 - ⏭️ 5 testes de coroutine (pulados no co-phpunit)
 
@@ -169,15 +170,16 @@ docker compose exec application php vendor/bin/phpunit test/Cases/UseCase/Schedu
 ## Funcionalidades
 
 - ✅ Criação e gerenciamento de contas
-- ✅ Chaves PIX com validação completa (CPF, CNPJ, email, telefone, aleatória)
+- ✅ **Chaves PIX com validação completa (CPF, CNPJ, email, telefone, aleatória)** *(feature adicional)*
+- ✅ **Validação obrigatória de chave PIX ativa antes de saques** *(feature adicional)*
 - ✅ Saques imediatos com validação de saldo
 - ✅ Agendamento de saques
 - ✅ Processamento automático de saques agendados (Crontab)
 - ✅ Processamento paralelo com Coroutines (até 10 jobs simultâneos)
-- ✅ Histórico completo de transações
-- ✅ Autenticação JWT
+- ✅ **Histórico completo de transações** *(feature adicional)*
+- ✅ **Autenticação JWT** *(feature adicional)*
 - ✅ Notificações por email (Mailhog)
-- ✅ Monitoramento com Prometheus/Grafana
+- ✅ **Monitoramento com Prometheus/Grafana** *(feature adicional)*
 
 ## Crontab (Processamento Automático)
 
@@ -290,7 +292,62 @@ docker compose logs crontab | grep "Crontab task"
 
 ## Documentação e Testes
 - ✅ Documentação Swagger completa
-- ✅ 132 testes automatizados (93 originais + 31 PIX + 9 schedule)
+- ✅ 133 testes automatizados (93 originais + 31 PIX + 10 validação PIX ativa + 9 schedule)
+
+---
+
+## Features Adicionais Desenvolvidas (Fora do Escopo Original)
+
+### Validação Obrigatória de Chave PIX Ativa
+
+**Contexto:**
+Foi implementada uma validação adicional de segurança que **impede saques de contas sem chave PIX ativa cadastrada**. Esta feature não estava no escopo original, mas adiciona uma camada importante de compliance com o sistema PIX brasileiro.
+
+**Implementação:**
+- **Arquivo:** `app/UseCase/Account/WithdrawUseCase.php`
+- **Método:** `validatePixKey(Account $account)`
+- **Exceção:** `PixKeyNotFoundException` (ErrorCode::SERVER_ERROR)
+
+**Regras de Validação:**
+- ✅ Conta deve possuir ao menos uma chave PIX
+- ✅ Chave PIX deve estar com status `active`
+- ✅ Chave PIX não pode estar excluída (`deleted_at IS NULL`)
+
+**Mensagem de Erro:**
+```
+"Nenhuma chave PIX ativa encontrada para esta conta.
+Cadastre uma chave PIX antes de realizar saques."
+```
+
+**Impacto nos Testes:**
+- ✅ 10 novos testes em `WithdrawUseCaseTest.php`
+- ✅ Todos os testes de controller (AccountControllerTest) atualizados para criar chaves PIX
+- ✅ 100% de cobertura na validação da regra de negócio
+
+**Benefícios:**
+- 🔒 Maior segurança nas operações de saque
+- ✅ Compliance com requisitos do sistema PIX
+- 📊 Garante rastreabilidade das transações
+- 🚨 Previne saques de contas não configuradas
+
+**Exemplo de Código:**
+```php
+private function validatePixKey(Account $account): void
+{
+    $hasActivePixKey = PixKey::where('account_id', $account->id)
+        ->where('status', 'active')
+        ->whereNull('deleted_at')
+        ->exists();
+
+    if (!$hasActivePixKey) {
+        throw new PixKeyNotFoundException(
+            'Nenhuma chave PIX ativa encontrada para esta conta...'
+        );
+    }
+}
+```
+
+---
 
 ## 💡 Sugestões de Melhorias
 

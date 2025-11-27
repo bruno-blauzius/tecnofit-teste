@@ -60,7 +60,7 @@ class WithdrawUseCaseTest extends TestCase
         PixKey::create([
             'account_id' => $account->id,
             'key_type' => 'email',
-            'key_value' => 'teste@example.com',
+            'key_value' => 'test@example.com',
             'status' => 'active',
         ]);
 
@@ -92,7 +92,7 @@ class WithdrawUseCaseTest extends TestCase
         PixKey::create([
             'account_id' => $account->id,
             'key_type' => 'email',
-            'key_value' => 'teste@example.com',
+            'key_value' => 'test@example.com',
             'status' => 'active',
         ]);
 
@@ -141,7 +141,7 @@ class WithdrawUseCaseTest extends TestCase
         PixKey::create([
             'account_id' => $account->id,
             'key_type' => 'email',
-            'key_value' => 'teste@example.com',
+            'key_value' => 'test@example.com',
             'status' => 'active',
         ]);
 
@@ -168,7 +168,7 @@ class WithdrawUseCaseTest extends TestCase
         PixKey::create([
             'account_id' => $account->id,
             'key_type' => 'email',
-            'key_value' => 'teste@example.com',
+            'key_value' => 'test@example.com',
             'status' => 'active',
         ]);
 
@@ -195,7 +195,7 @@ class WithdrawUseCaseTest extends TestCase
         PixKey::create([
             'account_id' => $account->id,
             'key_type' => 'email',
-            'key_value' => 'teste@example.com',
+            'key_value' => 'test@example.com',
             'status' => 'active',
         ]);
 
@@ -221,7 +221,7 @@ class WithdrawUseCaseTest extends TestCase
         PixKey::create([
             'account_id' => $account->id,
             'key_type' => 'email',
-            'key_value' => 'teste@example.com',
+            'key_value' => 'test@example.com',
             'status' => 'active',
         ]);
 
@@ -250,7 +250,7 @@ class WithdrawUseCaseTest extends TestCase
         PixKey::create([
             'account_id' => $account->id,
             'key_type' => 'email',
-            'key_value' => 'teste@example.com',
+            'key_value' => 'test@example.com',
             'status' => 'active',
         ]);
 
@@ -304,7 +304,7 @@ class WithdrawUseCaseTest extends TestCase
         PixKey::create([
             'account_id' => $account->id,
             'key_type' => 'email',
-            'key_value' => 'teste@example.com',
+            'key_value' => 'test@example.com',
             'status' => 'active',
         ]);
 

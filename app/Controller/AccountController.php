@@ -14,6 +14,7 @@ use App\UseCase\Account\WithdrawUseCase;
 use App\UseCase\Account\Exception\AccountNotFoundException;
 use App\UseCase\Account\Exception\InsufficientBalanceException;
 use App\UseCase\Account\Exception\InvalidScheduleException;
+use App\UseCase\Account\Exception\PixKeyNotFoundException;
 use App\UseCase\Account\UpdateBalanceRequest;
 use App\UseCase\Account\UpdateBalanceUseCase;
 use DateTimeImmutable;
@@ -305,7 +306,7 @@ class AccountController extends AbstractController
 
         } catch (AccountNotFoundException $e) {
             return JsonResponse::error($response, $e->getMessage(), 404);
-        } catch (InsufficientBalanceException|InvalidScheduleException $e) {
+        } catch (InsufficientBalanceException|InvalidScheduleException|PixKeyNotFoundException $e) {
             return JsonResponse::error($response, $e->getMessage(), 422);
         } catch (\Throwable $e) {
             var_dump($e->getMessage());
