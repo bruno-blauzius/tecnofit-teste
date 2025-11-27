@@ -1,23 +1,62 @@
 services:
-  # Serviço PHP com Apache
   application:
+    container_name: application
+    image: application
     build:
       context: .
-      dockerfile: infra/Dockerfile
-    container_name: tecnofit-php
-    ports:
-      - "8000:80"
     volumes:
-      - ./app:/var/www/html
+      - ./:/opt/www:rw
+    ports:
+      - 9501:9501
+      - 9502:9502
     environment:
-      - APACHE_RUN_USER=www-data
-      - APACHE_RUN_GROUP=www-data
+      - APP_ENV=dev
+      - SCAN_CACHEABLE=false
+      - DB_DRIVER=mysql
+      - DB_HOST=db
+      - DB_PORT=3306
+      - DB_DATABASE=${MYSQL_DATABASE}
+      - DB_USERNAME=${MYSQL_USER}
+      - DB_PASSWORD=${MYSQL_PASSWORD}
+      - MAIL_HOST=mailhog
+      - MAIL_PORT=1025
+      - HYPERF_CONFIG_MODE=api
     networks:
       - tecnofit-network
     depends_on:
       - db
+      - redis
+      - mailhog
 
-  # Serviço MySQL (opcional, mas recomendado para Laravel)
+  crontab:
+    container_name: application-crontab
+    image: application
+    build:
+      context: .
+    volumes:
+      - ./:/opt/www:rw
+    environment:
+      - APP_ENV=dev
+      - SCAN_CACHEABLE=false
+      - DB_DRIVER=mysql
+      - DB_HOST=db
+      - DB_PORT=3306
+      - DB_DATABASE=${MYSQL_DATABASE}
+      - DB_USERNAME=${MYSQL_USER}
+      - DB_PASSWORD=${MYSQL_PASSWORD}
+      - MAIL_HOST=mailhog
+      - MAIL_PORT=1025
+      - HYPERF_CONFIG_MODE=crontab
+    command: php bin/hyperf.php start
+    networks:
+      - tecnofit-network
+    depends_on:
+      - db
+      - redis
+      - mailhog
+      - application
+
+
   db:
     image: mysql:8.0
     container_name: tecnofit-database
@@ -33,9 +72,89 @@ services:
     networks:
       - tecnofit-network
 
-volumes:
-  db-data:
+  db-test:
+    image: mysql:8.0
+    container_name: tecnofit-database-test
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_DATABASE: hyperf_test
+      MYSQL_USER: test
+      MYSQL_PASSWORD: test
+    ports:
+      - "3307:3306"
+    tmpfs:
+      - /var/lib/mysql
+    command: --default-authentication-plugin=mysql_native_password
+    networks:
+      - tecnofit-network
+
+
+  redis:
+    image: redis:7.2-alpine
+    container_name: tecnofit-redis
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis-data:/data
+    restart: unless-stopped
+    networks:
+      - tecnofit-network
+
+
+  mailhog:
+    image: mailhog/mailhog:latest
+    container_name: tecnofit-mailhog
+    ports:
+      - "1025:1025"  # SMTP server
+      - "8025:8025"  # Web UI
+    networks:
+      - tecnofit-network
+
+  prometheus:
+    image: prom/prometheus:latest
+    container_name: tecnofit-prometheus
+    ports:
+      - "9090:9090"
+    volumes:
+      - ./monitoring/prometheus.yml:/etc/prometheus/prometheus.yml
+      - prometheus-data:/prometheus
+    command:
+      - '--config.file=/etc/prometheus/prometheus.yml'
+      - '--storage.tsdb.path=/prometheus'
+      - '--web.console.libraries=/usr/share/prometheus/console_libraries'
+      - '--web.console.templates=/usr/share/prometheus/consoles'
+    networks:
+      - tecnofit-network
+    depends_on:
+      - application
+      - crontab
+
+  grafana:
+    image: grafana/grafana:latest
+    container_name: tecnofit-grafana
+    ports:
+      - "3000:3000"
+    volumes:
+      - grafana-data:/var/lib/grafana
+      - ./monitoring/grafana/dashboards:/etc/grafana/provisioning/dashboards
+      - ./monitoring/grafana/datasources:/etc/grafana/provisioning/datasources
+    environment:
+      - GF_SECURITY_ADMIN_USER=admin
+      - GF_SECURITY_ADMIN_PASSWORD=admin123
+      - GF_USERS_ALLOW_SIGN_UP=false
+      - GF_AUTH_ANONYMOUS_ENABLED=false
+    networks:
+      - tecnofit-network
+    depends_on:
+      - prometheus
+
 
 networks:
   tecnofit-network:
     driver: bridge
+
+volumes:
+  db-data:
+  redis-data:
+  prometheus-data:
+  grafana-data:

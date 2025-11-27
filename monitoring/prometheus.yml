@@ -1,0 +1,18 @@
+global:
+  scrape_interval: 15s
+  evaluation_interval: 15s
+
+scrape_configs:
+- job_name: 'hyperf-application'
+  static_configs:
+  - targets: [ 'application:9502' ]
+  metrics_path: '/metrics'
+
+- job_name: 'hyperf-crontab'
+  static_configs:
+  - targets: [ 'application-crontab:9502' ]
+  metrics_path: '/metrics'
+
+- job_name: 'prometheus'
+  static_configs:
+  - targets: [ 'localhost:9090' ]

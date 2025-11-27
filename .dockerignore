@@ -1,0 +1,7 @@
+**
+!app/
+!bin/
+!config/
+!composer.*
+!docker-entrypoint.sh
+!README.md
